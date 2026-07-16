@@ -4,7 +4,10 @@ import {
    useRef,
    useState
 } from "react";
-import type { RoomDiagnosticSnapshot } from "../../../../packages/protocol/src/index.ts";
+import type {
+   RoomDiagnosticSnapshot,
+   UploadRecoveryDiagnostics
+} from "../../../../packages/protocol/src/index.ts";
 import type { MessageCatalog } from "../i18n/catalog.ts";
 import { copyText } from "../utils/clipboard.ts";
 
@@ -150,6 +153,10 @@ export function DiagnosticsDialog({
                         label={messages.diagnosticsActivity}
                         value={messages.activeCounts(snapshot.activeWrites, snapshot.activeReads)}
                      />
+                     <DiagnosticRow
+                        label={messages.diagnosticsRecovery}
+                        value={formatRecovery(snapshot.recovery)}
+                     />
                      <DiagnosticRow label={messages.diagnosticsDisk} value={snapshot.diskSpace} />
                      <DiagnosticRow label={messages.diagnosticsLog} value={snapshot.structuredLog} />
                      <DiagnosticRow
@@ -200,6 +207,16 @@ export function DiagnosticsDialog({
          </section>
       </div>
    );
+}
+
+function formatRecovery(recovery: UploadRecoveryDiagnostics): string {
+   return [
+      `truncate=${recovery.startupTruncations}/${recovery.startupTruncatedBytes}B`,
+      `rewind=${recovery.startupRewinds}/${recovery.startupRewoundBytes}B`,
+      `rollback=${recovery.checkpointRollbacks}`,
+      `replay=${recovery.idempotentReplays}`,
+      `complete=${recovery.recoveredCompletions}`
+   ].join("; ");
 }
 
 function DiagnosticRow({ label, value }: { label: string; value: string }): JSX.Element {

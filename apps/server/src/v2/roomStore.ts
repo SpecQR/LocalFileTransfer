@@ -25,7 +25,8 @@ import type {
    RoomLimits,
    RoomSharedText,
    RoomView,
-   UpdateRoomSharedTextRequest
+   UpdateRoomSharedTextRequest,
+   UploadRecoveryDiagnostics
 } from "../../../../packages/protocol/src/index.ts";
 import { availableFilePath } from "../local/fileNames.ts";
 import type {
@@ -58,7 +59,27 @@ export interface RoomStoreOptions {
    sourceHasher?: SourceHasher;
    availableBytes?: (directory: string) => Promise<number>;
    now?: () => number;
+   uploadCheckpointFault?: UploadCheckpointFaultInjector;
 }
+
+export type UploadCheckpointFaultPhase =
+   | "before-write"
+   | "after-write-before-fsync"
+   | "after-fsync-before-commit"
+   | "after-commit-before-ack";
+
+export interface UploadCheckpointFaultContext {
+   roomId: string;
+   itemId: string;
+   start: number;
+   length: number;
+   total: number;
+}
+
+export type UploadCheckpointFaultInjector = (
+   phase: UploadCheckpointFaultPhase,
+   context: UploadCheckpointFaultContext
+) => void | Promise<void>;
 
 export interface SourceHasher {
    hash(path: string, size: number, modifiedMs: number): Promise<string>;
@@ -86,6 +107,7 @@ export interface RoomDiagnosticState {
    activeWrites: number;
    activeReads: number;
    diskSpace: "ok" | "low" | "unavailable";
+   recovery: UploadRecoveryDiagnostics;
 }
 
 export class RoomStore {
@@ -98,11 +120,21 @@ export class RoomStore {
    private readonly sourceHasher: SourceHasher;
    private readonly availableBytes: (directory: string) => Promise<number>;
    private readonly now: () => number;
+   private readonly uploadCheckpointFault: UploadCheckpointFaultInjector | undefined;
    private readonly events = new EventEmitter();
    private readonly writeLocks = new Set<string>();
    private activeReads = 0;
    private readonly abortControllers = new Map<string, AbortController>();
    private readonly sharedTextKeys = new Map<string, Buffer>();
+   private readonly recovery: UploadRecoveryDiagnostics = {
+      startupTruncations: 0,
+      startupTruncatedBytes: 0,
+      startupRewinds: 0,
+      startupRewoundBytes: 0,
+      checkpointRollbacks: 0,
+      idempotentReplays: 0,
+      recoveredCompletions: 0
+   };
 
    constructor(options: RoomStoreOptions) {
       this.repository = options.repository;
@@ -114,6 +146,7 @@ export class RoomStore {
       this.sourceHasher = options.sourceHasher ?? { hash: hashSourceFile };
       this.availableBytes = options.availableBytes ?? filesystemAvailableBytes;
       this.now = options.now ?? Date.now;
+      this.uploadCheckpointFault = options.uploadCheckpointFault;
       this.events.setMaxListeners(200);
    }
 
@@ -144,7 +177,8 @@ export class RoomStore {
          transferringItems: items.filter((item) => item.state === "transferring").length,
          activeWrites: this.writeLocks.size,
          activeReads: this.activeReads,
-         diskSpace
+         diskSpace,
+         recovery: { ...this.recovery }
       };
    }
 
@@ -471,6 +505,8 @@ export class RoomStore {
             throw new RoomError(409, "The idempotency key was already used for different bytes");
          }
 
+         this.recovery.idempotentReplays += 1;
+         await this.recoverCommittedCompletion(room, item);
          return item;
       }
 
@@ -508,8 +544,17 @@ export class RoomStore {
 
       const release = this.acquireWriteLock(room.roomId, item.itemId);
       const start = range.start;
+      const faultContext: UploadCheckpointFaultContext = {
+         roomId: room.roomId,
+         itemId: item.itemId,
+         start,
+         length: range.length,
+         total: range.total
+      };
 
       try {
+         await this.injectUploadCheckpointFault("before-write", faultContext);
+
          if (start > 0) {
             const info = await stat(item.partialPath);
 
@@ -555,6 +600,8 @@ export class RoomStore {
             throw new RoomError(460, "Upload checkpoint checksum did not match");
          }
 
+         await this.injectUploadCheckpointFault("after-write-before-fsync", faultContext);
+
          const handle = await open(item.partialPath, "r+");
 
          try {
@@ -563,27 +610,48 @@ export class RoomStore {
             await handle.close();
          }
 
+         await this.injectUploadCheckpointFault("after-fsync-before-commit", faultContext);
+
          item.confirmedBytes = start + written;
          item.state = "transferring";
          item.lastChunkDigest = digest;
          item.updatedAt = this.now();
          delete item.error;
 
-         if (options) {
-            const commit: PersistedUploadCommit = {
-               itemId: item.itemId,
-               idempotencyKey: options.idempotencyKey,
-               startOffset: start,
-               endOffset: item.confirmedBytes,
-               checksum: options.checksum,
-               createdAt: item.updatedAt
-            };
+         try {
+            if (options) {
+               const commit: PersistedUploadCommit = {
+                  itemId: item.itemId,
+                  idempotencyKey: options.idempotencyKey,
+                  startOffset: start,
+                  endOffset: item.confirmedBytes,
+                  checksum: options.checksum,
+                  createdAt: item.updatedAt
+               };
 
-            this.repository.commitUploadCheckpoint(item, commit);
-            this.repository.trimUploadCommits(item.itemId, maxUploadCommitsPerItem);
-         } else {
-            this.repository.updateItem(item);
+               this.repository.commitUploadCheckpoint(item, commit);
+            } else {
+               this.repository.updateItem(item);
+            }
+         } catch (error) {
+            try {
+               await truncate(item.partialPath, start);
+            } catch (rollbackError) {
+               throw new AggregateError(
+                  [error, rollbackError],
+                  "Upload checkpoint commit and file rollback both failed"
+               );
+            }
+
+            this.recovery.checkpointRollbacks += 1;
+            throw error;
          }
+
+         if (options) {
+            this.repository.trimUploadCommits(item.itemId, maxUploadCommitsPerItem);
+         }
+
+         await this.injectUploadCheckpointFault("after-commit-before-ack", faultContext);
 
          this.touch(room);
          this.publish(room, "item-progress", item.itemId);
@@ -916,6 +984,44 @@ export class RoomStore {
       this.publish(room, "item-complete", item.itemId);
    }
 
+   private async recoverCommittedCompletion(
+      room: PersistedRoom,
+      item: PersistedRoomItem
+   ): Promise<boolean> {
+      if (item.confirmedBytes !== item.size || item.state === "ready") {
+         return false;
+      }
+
+      if (item.finalPath && await pathExists(item.finalPath)) {
+         const finalInfo = await stat(item.finalPath);
+
+         if (finalInfo.size === item.size) {
+            delete item.partialPath;
+            item.confirmedBytes = item.size;
+            item.sha256 = await hashFile(item.finalPath);
+            item.state = "ready";
+            item.completedAt = this.now();
+            item.updatedAt = item.completedAt;
+            this.repository.updateItem(item);
+            this.publish(room, "item-complete", item.itemId);
+            this.recovery.recoveredCompletions += 1;
+            return true;
+         }
+      }
+
+      if (item.partialPath && await pathExists(item.partialPath)) {
+         const partialInfo = await stat(item.partialPath);
+
+         if (partialInfo.size === item.size) {
+            await this.finalizeUpload(room, item);
+            this.recovery.recoveredCompletions += 1;
+            return true;
+         }
+      }
+
+      return false;
+   }
+
    private async recoverActiveRooms(): Promise<void> {
       for (const room of this.repository.listActiveRooms(this.now())) {
          this.abortControllers.set(room.roomId, new AbortController());
@@ -929,19 +1035,8 @@ export class RoomStore {
                continue;
             }
 
-            if (item.finalPath && await pathExists(item.finalPath)) {
-               const finalInfo = await stat(item.finalPath);
-
-               if (finalInfo.size === item.size) {
-                  delete item.partialPath;
-                  item.confirmedBytes = item.size;
-                  item.sha256 = await hashFile(item.finalPath);
-                  item.state = "ready";
-                  item.completedAt = this.now();
-                  item.updatedAt = item.completedAt;
-                  this.repository.updateItem(item);
-                  continue;
-               }
+            if (await this.recoverCommittedCompletion(room, item)) {
+               continue;
             }
 
             if (item.partialPath && await pathExists(item.partialPath)) {
@@ -949,8 +1044,12 @@ export class RoomStore {
                const durableOffset = Math.min(item.confirmedBytes, item.size);
 
                if (partialInfo.size > durableOffset) {
+                  this.recovery.startupTruncations += 1;
+                  this.recovery.startupTruncatedBytes += partialInfo.size - durableOffset;
                   await truncate(item.partialPath, durableOffset);
                } else if (partialInfo.size < durableOffset) {
+                  this.recovery.startupRewinds += 1;
+                  this.recovery.startupRewoundBytes += durableOffset - partialInfo.size;
                   item.confirmedBytes = partialInfo.size;
                   this.repository.deleteUploadCommitsAfter(item.itemId, partialInfo.size);
                }
@@ -961,7 +1060,7 @@ export class RoomStore {
                this.repository.updateItem(item);
 
                if (item.confirmedBytes === item.size) {
-                  await this.finalizeUpload(room, item);
+                  await this.recoverCommittedCompletion(room, item);
                }
             } else {
                item.confirmedBytes = 0;
@@ -972,6 +1071,13 @@ export class RoomStore {
             }
          }
       }
+   }
+
+   private async injectUploadCheckpointFault(
+      phase: UploadCheckpointFaultPhase,
+      context: UploadCheckpointFaultContext
+   ): Promise<void> {
+      await this.uploadCheckpointFault?.(phase, context);
    }
 }
 

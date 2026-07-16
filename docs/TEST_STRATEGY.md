@@ -4,7 +4,7 @@
 
 Local File Transfer は、browser file provider、local HTTP、Electron process、SQLite、Windows file semantics、dynamic network adapter、responsive UI をまたぎます。単一の test layer だけでは十分な confidence を得られません。
 
-RC.2 は unit test、real Fastify integration、browser/Electron E2E、DPI geometry、packaged process test、artifact inspection、physical-device manual gate を組み合わせます。
+RC.3 は unit test、fault injection、real Fastify integration、browser/Electron E2E、DPI geometry、packaged process test、artifact attestation、physical-device manual gate を組み合わせます。
 
 ## Automated layer
 
@@ -23,7 +23,8 @@ RC.2 は unit test、real Fastify integration、browser/Electron E2E、DPI geome
 - Room creation、authorization、ticket cookie、exact Origin/Host rule
 - Upload registration、`HEAD`/`PATCH` offset、checksum、duplicate commit、stale offset
 - 15 MiB 以上の browser-upload regression path
-- SQLite migration、WAL recovery、partial-file reconciliation、retention、cleanup
+- SQLite migration、WAL recovery、partial-file truncate/offset rewind、retention、cleanup
+- Write/fsync/SQLite update/commit/ACK loss の fault phase と idempotent completion recovery
 - Service restart、simulated write failure、source change、disk constraint、cancellation
 - Range、`If-Range`、`416`、streaming ZIP、archive source fault
 - Shared text conflict、expiry、restart、SQLite/WAL の plaintext absence
@@ -35,7 +36,7 @@ Built app を起動し、2 つの mobile profile を検証します。
 - iPhone-sized WebKit
 - Android-sized Chromium
 
-各 scenario は authorization、file flow の両方向、queue state、両 endpoint からの Shared text、unread state、conflict、IME guard、reload convergence、reset、action reachability を確認します。
+各 scenario は authorization、file flow の両方向、queue state、両 endpoint からの Shared text、unread state、conflict、IME guard、reload convergence、offline/online recovery、reset、action reachability を確認します。
 
 目的は mock protocol だけではなく、build 済み application の behavior を検証することです。
 
@@ -53,20 +54,20 @@ Windows scale 100%、125%、150%、200% で次を検証します。
 
 ### Packaged verification
 
-x64 Portable smoke は development server ではなく生成した EXE を使用します。Launch、health、Utility Process restart、graceful close、endpoint shutdown、residual process count を確認します。
+x64 Portable smoke は development server ではなく生成した EXE を `--disable-gpu` で使用します。Launch、health、Utility Process restart、graceful close、endpoint shutdown、residual process count を確認します。GPU/rendering と DPI は別の visual geometry gate が担当します。
 
 PE header と Electron fuse は両 architecture で確認します。ARM64 runtime は物理 device を必要とする別 gate です。
 
-## RC.2 baseline
+## RC.3 release gate
 
-- Unit/integration test: 86 passed
-- End-to-end mobile-room scenario: 2 passed
-- Total automated scenario: 88
-- x64 packaged launch/recovery smoke: passed
-- x64/ARM64 build、PE、fuse、audit、SBOM、static check: passed
-- ARM64 physical runtime: not performed
+- Unit/integration/release-script test: clean run required
+- Android Chromium と iPhone WebKit E2E: clean run required
+- x64 packaged launch/service-recovery/shutdown smoke: required
+- x64/ARM64 build、PE、fuse、audit、SBOM、static check: required
+- Build provenance と SBOM attestation の `gh attestation verify`: required
+- ARM64 physical runtime: not performed unless separately recorded
 
-Generated evidence は `docs/release/2.0.0-rc.2` にあります。New build では再生成し、checked-in evidence を current result の代わりに使用しないでください。
+Exact count と artifact-specific result は tag workflow が生成する `docs/release/2.0.0-rc.3` 相当の release evidence に記録します。RC.2 の checked-in evidence を current result として再利用しません。
 
 ## Manual release gate
 

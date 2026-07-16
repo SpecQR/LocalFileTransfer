@@ -239,3 +239,61 @@
       padding-bottom: max(7px, env(safe-area-inset-bottom));
    }
 }
+
+
+.status-dot-warning {
+   background: #d59a28;
+   box-shadow: 0 0 0 3px rgb(213 154 40 / 14%);
+}
+
+.room-recovery {
+   align-items: center;
+   background: #fff6df;
+   border: 1px solid #e7c979;
+   border-radius: 7px;
+   color: #563c0c;
+   display: grid;
+   gap: 6px;
+   grid-template-columns: minmax(0, 1fr) auto;
+   min-height: 36px;
+   padding: 4px 5px 4px 8px;
+}
+
+.room-recovery > span {
+   font-size: 0.74rem;
+   font-weight: 750;
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.room-recovery > button {
+   background: #ffffff;
+   border: 1px solid #ddc276;
+   border-radius: 6px;
+   color: #4a3711;
+   font-size: 0.7rem;
+   gap: 4px;
+   min-height: 28px;
+   padding: 0 7px;
+}
+
+.room-recovery > button:hover {
+   background: #fffaf0;
+}
+
+.room-recovery > button:focus-visible {
+   outline: 3px solid rgb(228 164 40 / 52%);
+   outline-offset: 2px;
+}
+
+.room-mobile > .room-recovery {
+   margin-bottom: 12px;
+   min-height: 44px;
+   padding-left: 11px;
+}
+
+.room-mobile .room-recovery > button {
+   min-height: 44px;
+}

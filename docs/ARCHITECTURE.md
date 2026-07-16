@@ -33,7 +33,7 @@ flowchart LR
 | Utility Process | Fastify、SQLite、file stream、hash worker、room cleanup、diagnostics | UI を表示する、schema validation なしに message を信頼する |
 | Browser UI | Room authorization、upload、download、event reconciliation、Shared text | Capability を現在の URL/session flow 外へ保持する、clipboard を自動的に読む |
 
-Utility Process boundary により、network と file workload を Electron browser process から分離します。Service が予期せず終了した場合は main process が検知して再起動し、SQLite の committed offset と partial file length を再照合します。
+Utility Process boundary により、network と file workload を Electron browser process から分離します。Service が予期せず終了した場合は main process が検知して再起動し、SQLite の committed offset と partial file length を再照合します。`resume` と `unlock-screen` では adapter と preferred room origin も再評価します。
 
 ## 起動シーケンス
 
@@ -59,7 +59,7 @@ SQLite repository は versioned schema、対応環境での strict table、forei
 - 上限付き idempotency record と replayable event metadata
 - Shared text の nonce、ciphertext、authentication tag、revision、timestamp
 
-File content は SQLite に保存しません。Browser upload は partial file に書き込み、exact length と digest を検証した後だけ完成 file へ atomic rename します。Windows source file は元の場所から stream し、response ごとに source identity を再検証します。
+File content は SQLite に保存しません。Browser upload は partial file に書き込み、exact length と digest を検証した後だけ完成 file へ atomic rename します。Startup reconciliation は uncommitted tail を truncate し、SQLite offset が file より先行した場合は実在 byte まで rewind します。Windows source file は元の場所から stream し、response ごとに source identity を再検証します。
 
 ## Data path
 
@@ -85,7 +85,7 @@ SQLite へは AES-256-GCM ciphertext を保存します。At-rest key の deriva
 
 Room snapshot が authoritative state です。Server-Sent Events は room ごとに単調増加する event ID と上限付き履歴を持ち、`Last-Event-ID` replay に対応します。
 
-Heartbeat は connection を維持します。Event を失った場合、5 秒間隔の polling fallback、`visibilitychange`、`pageshow`、reload 時の snapshot reconciliation により収束します。
+Heartbeat は connection を維持します。Event を失った場合、5 秒間隔の polling fallback、`online`/`offline`、`visibilitychange`、`pageshow`、reload 時の snapshot reconciliation により収束します。Connection warning は failure 時だけ UI に現れ、通常 geometry を変えません。
 
 ## Resource と lifecycle の上限
 

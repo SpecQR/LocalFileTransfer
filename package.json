@@ -1,6 +1,6 @@
 {
    "name": "local-file-transfer",
-   "version": "2.0.0-rc.2",
+   "version": "2.0.0-rc.3",
    "description": "Portable local-network file and text transfer between Windows and modern browsers",
    "author": "SpecQR contributors",
    "license": "MIT",
@@ -32,10 +32,13 @@
       "test:visual": "node scripts/capture-scale-screenshots.mjs",
       "test:packaged": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-packaged-windows.ps1",
       "test": "node --test \"packages/**/*.test.ts\"",
-      "test:all": "npm test && npm run test:server && npm run test:web",
+      "test:all": "npm test && npm run test:release && npm run test:server && npm run test:web",
       "test:server": "npm run test --prefix apps/server",
       "test:web": "npm run test --prefix apps/web",
-      "test:e2e": "npm run build && tsc -p tsconfig.e2e.json && node scripts/run-e2e.mjs"
+      "test:e2e": "npm run build && tsc -p tsconfig.e2e.json && node scripts/run-e2e.mjs",
+      "release:stage": "node scripts/stage-release-assets.mjs",
+      "release:finalize": "node scripts/stage-release-assets.mjs --finalize",
+      "test:release": "node --test \"scripts/**/*.test.mjs\""
    },
    "engines": {
       "node": ">=22"

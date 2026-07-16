@@ -4,6 +4,7 @@ import {
    dialog,
    ipcMain,
    Menu,
+   powerMonitor,
    powerSaveBlocker,
    safeStorage,
    screen,
@@ -289,6 +290,16 @@ async function refreshNetworkRoom(): Promise<void> {
    });
 
    return networkRefreshPromise;
+}
+
+function refreshAfterSystemResume(): void {
+   if (isQuitting) {
+      return;
+   }
+
+   void refreshNetworkRoom().catch((error: unknown) => {
+      console.warn("Could not refresh the transfer room after system resume", error);
+   });
 }
 
 function setTransferPowerSave(active: boolean): void {
@@ -741,7 +752,11 @@ ipcMain.handle(openLogFolderChannel, async (event) => {
 
 if (hasSingleInstanceLock) {
    app.whenReady()
-      .then(createMainWindow)
+      .then(async () => {
+         powerMonitor.on("resume", refreshAfterSystemResume);
+         powerMonitor.on("unlock-screen", refreshAfterSystemResume);
+         await createMainWindow();
+      })
       .catch((error: unknown) => {
          const message = error instanceof Error ? error.message : "The app could not start.";
 

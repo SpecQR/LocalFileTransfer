@@ -16,7 +16,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const desktopRoot = join(root, "apps", "desktop");
 const electronPackageRoot = join(desktopRoot, "node_modules", "electron");
 const version = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version;
-const outputDir = join(root, "docs", "release", version, "screenshots");
+const releaseDir = join(root, "docs", "release", version);
+const outputDir = join(releaseDir, "screenshots");
 const scales = [1, 1.25, 1.5, 2];
 const executablePath = await ensureLocalElectron();
 const reports = [];
@@ -28,7 +29,7 @@ for (const scale of scales) {
 }
 
 await writeFile(
-   join(outputDir, "scale-report.json"),
+   join(releaseDir, "scale-report.json"),
    JSON.stringify({
       schemaVersion: 1,
       generatedAt: new Date().toISOString(),
@@ -37,7 +38,11 @@ await writeFile(
    }, null, 3) + "\n",
    "utf8"
 );
-process.stdout.write(JSON.stringify({ outputDir, reports }, null, 3) + "\n");
+process.stdout.write(JSON.stringify({
+   outputDir,
+   report: join(releaseDir, "scale-report.json"),
+   reports
+}, null, 3) + "\n");
 
 async function capture(scale) {
    const label = Math.round(scale * 100);

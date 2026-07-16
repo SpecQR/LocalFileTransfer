@@ -49,6 +49,7 @@ interface RoomPageProps {
 }
 
 type UploadState = "idle" | "preparing" | "uploading" | "paused" | "failed" | "complete";
+type RoomConnectionState = "opening" | "connected" | "reconnecting" | "offline" | "ended";
 
 export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.Element {
    const { messages } = useLocale();
@@ -63,6 +64,7 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
    const [room, setRoom] = useState<RoomView>();
    const [status, setStatus] = useState(messages.openingRoom);
    const [error, setError] = useState<string>();
+   const [connectionState, setConnectionState] = useState<RoomConnectionState>("opening");
    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
    const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
    const [uploadState, setUploadState] = useState<UploadState>("idle");
@@ -133,10 +135,13 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                setRoomId(resolvedRoomId);
                setRoom(view);
                setStatus(messages.connected);
+               setConnectionState("connected");
                setError(undefined);
             }
          } catch (openError) {
             if (!stopped) {
+               setConnectionState(navigator.onLine ? "reconnecting" : "offline");
+               setStatus(navigator.onLine ? messages.reconnecting : messages.offline);
                setError(openError instanceof Error ? openError.message : messages.openingFailed);
             }
          }
@@ -168,6 +173,7 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                setRoomId(bootstrap.roomId);
                setRoom(await getRoom(bootstrap.roomId));
                setStatus(messages.connected);
+               setConnectionState("connected");
                setError(undefined);
             }
          } catch {
@@ -207,16 +213,23 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
          if (!stopped) {
             setRoom(view);
             setStatus(messages.connected);
+            setConnectionState("connected");
             setError(undefined);
+         }
+      };
+      const markDisconnected = (): void => {
+         if (!stopped) {
+            const offline = !navigator.onLine;
+
+            setConnectionState(offline ? "offline" : "reconnecting");
+            setStatus(offline ? messages.offline : messages.reconnecting);
          }
       };
       const load = async (): Promise<void> => {
          try {
             apply(await getRoom(roomId));
-         } catch (loadError) {
-            if (!stopped) {
-               setError(loadError instanceof Error ? loadError.message : messages.refreshFailed);
-            }
+         } catch {
+            markDisconnected();
          }
       };
       const unsubscribe = subscribeRoom(roomId, (event) => {
@@ -231,11 +244,13 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
          }
 
          if (event.t === "room-expired" || event.t === "room-reset") {
+            setConnectionState("ended");
             setError(messages.roomEnded);
          }
-      }, () => {
+      }, markDisconnected, () => {
          if (!stopped) {
-            setStatus(messages.reconnecting);
+            setConnectionState("connected");
+            setStatus(messages.connected);
          }
       });
       const fallback = window.setInterval(() => void load(), 5_000);
@@ -244,8 +259,18 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
             void load();
          }
       };
+      const online = (): void => {
+         setConnectionState("reconnecting");
+         setStatus(messages.reconnecting);
+         void load();
+      };
+      const offline = (): void => {
+         setConnectionState("offline");
+         setStatus(messages.offline);
+      };
 
-      window.addEventListener("online", refresh);
+      window.addEventListener("online", online);
+      window.addEventListener("offline", offline);
       window.addEventListener("pageshow", refresh);
       document.addEventListener("visibilitychange", refresh);
 
@@ -253,7 +278,8 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
          stopped = true;
          unsubscribe();
          window.clearInterval(fallback);
-         window.removeEventListener("online", refresh);
+         window.removeEventListener("online", online);
+         window.removeEventListener("offline", offline);
          window.removeEventListener("pageshow", refresh);
          document.removeEventListener("visibilitychange", refresh);
       };
@@ -328,9 +354,34 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
          setSharedTextUnread(false);
          setSharedTextRevision(0);
          setStatus(messages.ready);
+         setConnectionState("connected");
          setError(undefined);
       } catch (resetError) {
          setError(resetError instanceof Error ? resetError.message : messages.resetFailed);
+      }
+   }
+
+   async function retryConnection(): Promise<void> {
+      if (!roomId) {
+         return;
+      }
+
+      setConnectionState("reconnecting");
+      setStatus(messages.reconnecting);
+
+      try {
+         const next = await getRoom(roomId);
+
+         setRoom(next);
+         setStatus(messages.connected);
+         setConnectionState("connected");
+         setError(undefined);
+      } catch (retryError) {
+         const offline = !navigator.onLine;
+
+         setConnectionState(offline ? "offline" : "reconnecting");
+         setStatus(offline ? messages.offline : messages.reconnecting);
+         setError(retryError instanceof Error ? retryError.message : messages.refreshFailed);
       }
    }
 
@@ -435,6 +486,19 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
          roomId={roomId}
       />
    );
+   const recoveryNotice = (
+      connectionState === "reconnecting" || connectionState === "offline"
+   ) ? (
+      <section className="room-recovery" role="status">
+         <span>
+            {connectionState === "offline" ? messages.offline : messages.reconnecting}
+         </span>
+         <button type="button" onClick={() => void retryConnection()}>
+            <RefreshCw aria-hidden="true" size={16} />
+            {messages.retryConnection}
+         </button>
+      </section>
+   ) : null;
    const diagnostics = (
       <DiagnosticsDialog
          load={loadDiagnostics}
@@ -491,6 +555,8 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                      </button>
                   </div>
                </header>
+
+               {recoveryNotice}
 
                <section className="room-mobile-actions">
                   <label className="room-file-picker">
@@ -604,7 +670,13 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
          >
             <header className="room-toolbar">
                <div className="room-status" aria-atomic="true" aria-live="polite">
-                  <span className={error ? "status-dot status-dot-error" : "status-dot"} />
+                  <span className={
+                     error
+                        ? "status-dot status-dot-error"
+                        : connectionState === "reconnecting" || connectionState === "offline"
+                           ? "status-dot status-dot-warning"
+                           : "status-dot"
+                  } />
                   <span>{error ?? status}</span>
                </div>
                <div className="room-tools">
@@ -676,6 +748,8 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                   />
                </div>
             </header>
+
+            {recoveryNotice}
 
             {joinUrl ? (
                <section className="room-qr-square">

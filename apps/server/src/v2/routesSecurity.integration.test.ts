@@ -78,6 +78,12 @@ test("hardens authorization, malformed boundaries, Unicode names, and public sou
 
    assert.ok(serialized);
    const cookie = serialized.split(";", 1)[0] ?? "";
+   const legacyInfo = await app.inject({
+      method: "GET",
+      url: "/api/local/info"
+   });
+
+   assert.equal(legacyInfo.statusCode, 404);
    const badOrigin = await app.inject({
       method: "POST",
       url: roomUrl + "/uploads",
@@ -107,6 +113,20 @@ test("hardens authorization, malformed boundaries, Unicode names, and public sou
       oversized.length,
       oversizedChecksum
    );
+   const retiredChunk = await app.inject({
+      method: "PUT",
+      url: roomUrl + "/uploads/" + oversizedId + "/chunks",
+      headers: {
+         cookie,
+         host: "localhost:80",
+         origin: "http://localhost:80",
+         "content-type": "application/octet-stream",
+         "content-range": "bytes 0-0/9"
+      },
+      payload: Buffer.from([1])
+   });
+
+   assert.equal(retiredChunk.statusCode, 404);
    const rejectedCheckpoint = await app.inject({
       method: "PATCH",
       url: roomUrl + "/uploads/" + oversizedId,

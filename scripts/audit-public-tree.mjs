@@ -3,6 +3,8 @@ import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const rootManifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+const publicVersion = rootManifest.version;
 const skippedDirectories = new Set([
    ".git",
    ".data",
@@ -83,6 +85,7 @@ for (const path of files) {
 
 await inspectManifest();
 await requireFiles();
+await inspectWorkflowPins();
 
 if (problems.length > 0) {
    process.stderr.write("Public tree audit failed:\n" + problems.map((problem) => `- ${problem}`).join("\n") + "\n");
@@ -91,7 +94,7 @@ if (problems.length > 0) {
    process.stdout.write(JSON.stringify({
       root: ".",
       filesScanned: files.length,
-      version: "2.0.0-rc.2",
+      version: publicVersion,
       specqr: "2.4.0",
       result: "pass"
    }, null, 3) + "\n");
@@ -167,11 +170,23 @@ function inspectText(rel, content) {
 }
 
 async function inspectManifest() {
-   const rootManifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
-   const webManifest = JSON.parse(await readFile(join(root, "apps", "web", "package.json"), "utf8"));
+   const manifests = [
+      ["package.json", rootManifest],
+      ["apps/server/package.json", JSON.parse(await readFile(join(root, "apps", "server", "package.json"), "utf8"))],
+      ["apps/web/package.json", JSON.parse(await readFile(join(root, "apps", "web", "package.json"), "utf8"))],
+      ["apps/desktop/package.json", JSON.parse(await readFile(join(root, "apps", "desktop", "package.json"), "utf8"))],
+      ["packages/protocol/package.json", JSON.parse(await readFile(join(root, "packages", "protocol", "package.json"), "utf8"))],
+      ["packages/shared/package.json", JSON.parse(await readFile(join(root, "packages", "shared", "package.json"), "utf8"))]
+   ];
+   const webManifest = manifests.find(([path]) => path === "apps/web/package.json")?.[1];
 
-   if (rootManifest.version !== "2.0.0-rc.2") {
-      problems.push("package.json: unexpected public version");
+   if (!/^\d+\.\d+\.\d+-rc\.\d+$/u.test(publicVersion)) {
+      problems.push("package.json: public version must be an RC prerelease");
+   }
+   for (const [path, manifest] of manifests) {
+      if (manifest.version !== publicVersion) {
+         problems.push(path + ": version does not match package.json");
+      }
    }
    if (rootManifest.license !== "MIT") {
       problems.push("package.json: license must be MIT");
@@ -186,6 +201,8 @@ async function inspectManifest() {
 
 async function requireFiles() {
    const required = [
+      ".github/workflows/ci.yml",
+      ".github/workflows/release.yml",
       "AGENTS.md",
       "CHANGELOG.md",
       "CODE_OF_CONDUCT.md",
@@ -199,18 +216,79 @@ async function requireFiles() {
       "docs/LICENSE_JA.md",
       "docs/MANUAL_TEST_CHECKLIST.md",
       "docs/PRIVACY.md",
+      "docs/RELIABILITY.md",
       "docs/PROJECT_LANGUAGE.md",
       "docs/PROTOCOL.md",
       "docs/SECURITY_MODEL.md",
       "docs/SHARED_TEXT_DESIGN.md",
       "docs/SPECQR_INTEGRATION.md",
       "docs/TEST_STRATEGY.md",
-      "docs/release/2.0.0-rc.2/RELEASE_NOTES.md"
+      "docs/release/" + publicVersion + "/RELEASE_NOTES.md",
+      "scripts/release-assets-lib.mjs",
+      "scripts/release-assets-lib.test.mjs",
+      "scripts/stage-release-assets.mjs",
+      "scripts/test-packaged-windows.ps1"
    ];
    const existing = new Set(files.map((path) => normalize(relative(root, path))));
    for (const rel of required) {
       if (!existing.has(rel)) {
          problems.push(`${rel}: required public documentation is missing`);
+      }
+   }
+}
+
+async function inspectWorkflowPins() {
+   const workflowPaths = [
+      ".github/workflows/ci.yml",
+      ".github/workflows/release.yml"
+   ];
+
+   for (const rel of workflowPaths) {
+      const content = await readFile(join(root, ...rel.split("/")), "utf8");
+      const externalActions = [];
+
+      for (const [index, line] of content.split(/\r?\n/u).entries()) {
+         const match = line.match(/^\s*uses:\s*["']?([^"'#\s]+)["']?/u);
+
+         if (!match) {
+            continue;
+         }
+
+         const action = match[1];
+
+         if (action.startsWith("./")) {
+            continue;
+         }
+
+         externalActions.push(action);
+         const separator = action.lastIndexOf("@");
+         const reference = separator >= 0 ? action.slice(separator + 1) : "";
+
+         if (!/^[a-f0-9]{40}$/iu.test(reference)) {
+            problems.push(`${rel}:${index + 1}: external action must use an immutable 40-character commit SHA`);
+         }
+      }
+
+      if (externalActions.length === 0) {
+         problems.push(`${rel}: workflow must use at least one pinned external action`);
+      }
+   }
+
+   const release = await readFile(join(root, ".github", "workflows", "release.yml"), "utf8");
+   const requiredMarkers = [
+      "if: github.ref_type == 'tag'",
+      "id-token: write",
+      "attestations: write",
+      "npm run release:stage",
+      "actions/attest@",
+      "gh attestation verify",
+      "npm run release:finalize",
+      "--prerelease"
+   ];
+
+   for (const marker of requiredMarkers) {
+      if (!release.includes(marker)) {
+         problems.push(`.github/workflows/release.yml: required release safeguard is missing: ${marker}`);
       }
    }
 }

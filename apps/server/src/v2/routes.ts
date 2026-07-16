@@ -265,21 +265,6 @@ export async function registerRoomRoutes(app: FastifyInstance, deps: RoomRoutesD
       return reply.code(204).send();
    });
 
-   app.put("/api/v2/rooms/:roomId/uploads/:itemId/chunks", async (request, reply) => {
-      assertSameOrigin(request);
-      const params = request.params as ItemParams;
-      const roomId = parseRoomId(params.roomId);
-      const itemId = parseRoomItemId(params.itemId);
-      const room = authorizeRoom(deps.rooms, request, roomId);
-      const range = contentRangeFromRequest(request);
-      const item = await deps.rooms.appendChunk(room, itemId, range, request.body);
-
-      return reply.send({
-         item: publicItem(item),
-         confirmedOffset: item.confirmedBytes
-      });
-   });
-
    app.get("/api/v2/rooms/:roomId/files/archive", async (request, reply) => {
       const roomId = parseRoomId((request.params as RoomParams).roomId);
       const room = authorizeRoom(deps.rooms, request, roomId);

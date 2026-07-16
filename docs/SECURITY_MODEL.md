@@ -70,6 +70,7 @@ Browser application と data は local HTTP で配信されるため、active ne
 - Shared text を event と room snapshot から除外
 - Full source path を renderer/browser contract の外側に保持
 - Publication audit が local path、environment file、key、database、executable を拒否
+- Recovery diagnostics は truncate/rewind/rollback/replay/completion の集計値だけを返し、identifier、path、name、content を返さない
 
 ### Shared text の disk storage
 
@@ -102,7 +103,7 @@ Hostile-network security を正直に提供するには、local service の trus
 
 - QR は bearer capability です。Room lifetime 中に撮影・copy した人は、到達可能な LAN から参加できます。
 - Local HTTP traffic と metadata は network observer から見える可能性があります。
-- Unsigned build は SmartScreen warning を表示し、publisher identity を証明できません。
+- Unsigned build は SmartScreen warning を表示し、publisher identity を証明できません。GitHub Artifact Attestation は workflow/source provenance を検証しますが、この residual risk を解消しません。
 - Physical mobile file provider は automation で完全再現できない suspend behavior を持ちます。
 - Configured limit 内でも、大量の有効 workload は disk と CPU を消費します。
 

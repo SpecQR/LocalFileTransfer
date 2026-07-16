@@ -110,6 +110,16 @@ export interface DurableUploadStatus {
    state: RoomItemState;
 }
 
+export interface UploadRecoveryDiagnostics {
+   startupTruncations: number;
+   startupTruncatedBytes: number;
+   startupRewinds: number;
+   startupRewoundBytes: number;
+   checkpointRollbacks: number;
+   idempotentReplays: number;
+   recoveredCompletions: number;
+}
+
 export interface RoomDiagnosticSnapshot {
    version: string;
    protocol: typeof durableUploadProtocol;
@@ -122,6 +132,7 @@ export interface RoomDiagnosticSnapshot {
    activeWrites: number;
    activeReads: number;
    diskSpace: "ok" | "low" | "unavailable";
+   recovery: UploadRecoveryDiagnostics;
    sourceHash: {
       workers: number;
       queued: number;

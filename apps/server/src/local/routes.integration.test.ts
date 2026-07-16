@@ -30,7 +30,11 @@ async function fixture(t: TestContext) {
       hardTtlMs: config.sessionHardTtlMs,
       limits: config.limits
    });
-   const app = await buildApp({ config, sessions });
+   const app = await buildApp({
+      config,
+      sessions,
+      enableLegacyRoutes: true
+   });
 
    t.after(async () => {
       try {

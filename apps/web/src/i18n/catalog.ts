@@ -11,6 +11,8 @@ export interface MessageCatalog {
    openingFailed: string;
    refreshFailed: string;
    reconnecting: string;
+   offline: string;
+   retryConnection: string;
    roomEnded: string;
    addingFiles: string;
    ready: string;
@@ -91,6 +93,7 @@ export interface MessageCatalog {
    diagnosticsDisk: string;
    diagnosticsLog: string;
    diagnosticsErrors: string;
+   diagnosticsRecovery: string;
    copyDiagnostics: string;
    openLogFolder: string;
    close: string;
@@ -109,6 +112,8 @@ const english: MessageCatalog = {
    openingFailed: "Could not open room",
    refreshFailed: "Room refresh failed",
    reconnecting: "Reconnecting...",
+   offline: "Offline",
+   retryConnection: "Retry",
    roomEnded: "This room has ended. Scan the new QR code.",
    addingFiles: "Adding files...",
    ready: "Ready",
@@ -189,6 +194,7 @@ const english: MessageCatalog = {
    diagnosticsDisk: "Disk",
    diagnosticsLog: "Log",
    diagnosticsErrors: "Recent errors",
+   diagnosticsRecovery: "Recovery",
    copyDiagnostics: "Copy diagnostics",
    openLogFolder: "Open log folder",
    close: "Close",
@@ -207,6 +213,8 @@ const japanese: MessageCatalog = {
    openingFailed: "ルームを開けませんでした",
    refreshFailed: "ルームを更新できませんでした",
    reconnecting: "再接続しています...",
+   offline: "オフラインです",
+   retryConnection: "再接続",
    roomEnded: "このルームは終了しました。新しい QR コードを読み取ってください。",
    addingFiles: "ファイルを追加しています...",
    ready: "準備完了",
@@ -287,6 +295,7 @@ const japanese: MessageCatalog = {
    diagnosticsDisk: "ディスク",
    diagnosticsLog: "ログ",
    diagnosticsErrors: "最近のエラー",
+   diagnosticsRecovery: "回復処理",
    copyDiagnostics: "診断情報をコピー",
    openLogFolder: "ログフォルダーを開く",
    close: "閉じる",

@@ -1,0 +1,199 @@
+name: RC prerelease
+
+on:
+   push:
+      tags:
+         - "v*"
+   workflow_dispatch:
+
+permissions:
+   contents: write
+   id-token: write
+   attestations: write
+   artifact-metadata: write
+
+concurrency:
+   group: release-${{ github.ref }}
+   cancel-in-progress: false
+
+jobs:
+   release:
+      name: Windows Portable を検証して公開
+      if: github.ref_type == 'tag'
+      runs-on: windows-latest
+      timeout-minutes: 90
+      env:
+         LFT_RELEASE_TAG: ${{ github.ref_name }}
+         GH_TOKEN: ${{ github.token }}
+      steps:
+         - name: Source を checkout
+           uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+           with:
+              fetch-depth: 0
+
+         - name: Node.js を設定
+           uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+           with:
+              node-version: "22"
+              cache: npm
+              cache-dependency-path: |
+                 package-lock.json
+                 apps/server/package-lock.json
+                 apps/web/package-lock.json
+                 apps/desktop/package-lock.json
+
+         - name: Tag と package version を照合
+           shell: pwsh
+           run: |
+              $version = (Get-Content -LiteralPath "package.json" -Raw | ConvertFrom-Json).version
+              $expectedTag = "v$version"
+              if ($env:LFT_RELEASE_TAG -ne $expectedTag) {
+                 throw "Tag $env:LFT_RELEASE_TAG does not match package version $expectedTag"
+              }
+              if ($env:GITHUB_REF_TYPE -ne "tag") {
+                 throw "Release workflow must run from a tag"
+              }
+              "LFT_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+         - name: Root dependency を install
+           run: npm ci
+         - name: Server dependency を install
+           run: npm ci --prefix apps/server
+         - name: Web dependency を install
+           run: npm ci --prefix apps/web
+         - name: Desktop dependency を install
+           run: npm ci --prefix apps/desktop
+         - name: Playwright browser を install
+           run: npx playwright install chromium webkit
+
+         - name: 公開ツリーを監査
+           run: npm run audit:public
+         - name: Unit と integration test
+           run: npm run test:all
+         - name: Production build
+           run: npm run build
+         - name: Browser と Electron E2E
+           run: npm run test:e2e
+         - name: Release configuration を検証
+           run: npm run verify:release-config
+
+         - name: Dependency vulnerability を監査
+           shell: pwsh
+           run: |
+              npm audit --audit-level=high
+              npm audit --audit-level=high --prefix apps/server
+              npm audit --audit-level=high --prefix apps/web
+              npm audit --audit-level=high --prefix apps/desktop
+
+         - name: x64 Portable を build
+           run: npm run dist:windows
+         - name: ARM64 Portable を build
+           run: npm run dist:windows:arm64
+         - name: Electron fuse を検証
+           shell: pwsh
+           run: |
+              npm run verify:fuses --prefix apps/desktop
+              npm run verify:fuses:arm64 --prefix apps/desktop
+         - name: DPI geometry を検証
+           run: npm run test:visual
+         - name: x64 packaged recovery smoke
+           run: npm run test:packaged
+
+         - name: SBOM と release evidence を生成
+           run: npm run release:evidence
+         - name: Static validation evidence を生成
+           run: npm run release:static-validation
+         - name: Release asset を stage
+           run: npm run release:stage
+
+         - name: Build provenance attestation を生成
+           id: provenance
+           uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
+           with:
+              subject-path: |
+                 ${{ github.workspace }}/apps/desktop/release/Local.File.Transfer-${{ env.LFT_VERSION }}-x64-Portable.exe
+                 ${{ github.workspace }}/apps/desktop/release/Local.File.Transfer-${{ env.LFT_VERSION }}-arm64-Portable.exe
+
+         - name: Provenance bundle を release asset に追加
+           shell: pwsh
+           run: |
+              $destination = Join-Path "release-assets\$env:LFT_RELEASE_TAG" "ATTESTATION-PROVENANCE.sigstore.json"
+              Copy-Item -LiteralPath "${{ steps.provenance.outputs.bundle-path }}" -Destination $destination
+
+         - name: Desktop SBOM attestation を生成
+           id: sbom
+           uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
+           with:
+              subject-path: |
+                 ${{ github.workspace }}/apps/desktop/release/Local.File.Transfer-${{ env.LFT_VERSION }}-x64-Portable.exe
+                 ${{ github.workspace }}/apps/desktop/release/Local.File.Transfer-${{ env.LFT_VERSION }}-arm64-Portable.exe
+              sbom-path: ${{ github.workspace }}/docs/release/${{ env.LFT_VERSION }}/SBOM-desktop.cdx.json
+
+         - name: SBOM bundle と最終 checksum を生成
+           shell: pwsh
+           run: |
+              $destination = Join-Path "release-assets\$env:LFT_RELEASE_TAG" "ATTESTATION-SBOM.sigstore.json"
+              Copy-Item -LiteralPath "${{ steps.sbom.outputs.bundle-path }}" -Destination $destination
+              npm run release:finalize
+
+         - name: Attestation を検証
+           shell: pwsh
+           run: |
+              gh attestation verify "apps/desktop/release/Local.File.Transfer-$env:LFT_VERSION-x64-Portable.exe" --repo $env:GITHUB_REPOSITORY
+              gh attestation verify "apps/desktop/release/Local.File.Transfer-$env:LFT_VERSION-arm64-Portable.exe" --repo $env:GITHUB_REPOSITORY
+
+         - name: Release asset を workflow artifact として保存
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+              name: Local.File.Transfer-${{ env.LFT_VERSION }}-release-assets
+              path: release-assets/${{ env.LFT_RELEASE_TAG }}/*
+              if-no-files-found: error
+              retention-days: 30
+
+         - name: GitHub prerelease を作成または更新
+           shell: pwsh
+           run: |
+              $releaseDirectory = Join-Path "release-assets" $env:LFT_RELEASE_TAG
+              $notes = Join-Path $releaseDirectory "RELEASE_NOTES.md"
+              $assets = @(Get-ChildItem -LiteralPath $releaseDirectory -File | ForEach-Object FullName)
+              $title = "Local File Transfer $env:LFT_VERSION"
+
+              gh release view $env:LFT_RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
+              if ($LASTEXITCODE -eq 0) {
+                 gh release edit $env:LFT_RELEASE_TAG `
+                    --repo $env:GITHUB_REPOSITORY `
+                    --title $title `
+                    --notes-file $notes `
+                    --prerelease
+                 gh release upload $env:LFT_RELEASE_TAG @assets `
+                    --repo $env:GITHUB_REPOSITORY `
+                    --clobber
+              } else {
+                 gh release create $env:LFT_RELEASE_TAG @assets `
+                    --repo $env:GITHUB_REPOSITORY `
+                    --title $title `
+                    --notes-file $notes `
+                    --prerelease `
+                    --verify-tag
+              }
+
+         - name: 公開結果を再検証
+           shell: pwsh
+           run: |
+              $releaseDirectory = Join-Path "release-assets" $env:LFT_RELEASE_TAG
+              $expectedAssetCount = @(Get-ChildItem -LiteralPath $releaseDirectory -File).Count
+              $release = gh release view $env:LFT_RELEASE_TAG `
+                 --repo $env:GITHUB_REPOSITORY `
+                 --json tagName,isPrerelease,assets,url | ConvertFrom-Json
+              if ($release.tagName -ne $env:LFT_RELEASE_TAG -or -not $release.isPrerelease) {
+                 throw "Published release identity or prerelease state is invalid"
+              }
+              if (@($release.assets).Count -ne $expectedAssetCount) {
+                 throw "Published release asset count does not match staged asset count"
+              }
+              $publishedCommit = gh api "repos/$env:GITHUB_REPOSITORY/commits/$env:LFT_RELEASE_TAG" --jq .sha
+              $localCommit = git rev-parse HEAD
+              if ($publishedCommit.Trim() -ne $localCommit.Trim()) {
+                 throw "Release tag does not resolve to the built source commit"
+              }
+              $release | ConvertTo-Json -Depth 6

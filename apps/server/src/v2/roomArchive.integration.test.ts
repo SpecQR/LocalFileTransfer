@@ -82,6 +82,15 @@ test("authorized Download all streams only unchanged sources with safe unique na
       activeWrites: 0,
       activeReads: 0,
       diskSpace: "ok" as const,
+      recovery: {
+         startupTruncations: 0,
+         startupTruncatedBytes: 0,
+         startupRewinds: 0,
+         startupRewoundBytes: 0,
+         checkpointRollbacks: 0,
+         idempotentReplays: 0,
+         recoveredCompletions: 0
+      },
       sourceHash: { workers: 0, queued: 0, cacheEntries: 3, jobsStarted: 3 },
       structuredLog: "ready" as const,
       recentErrorCodes: [],

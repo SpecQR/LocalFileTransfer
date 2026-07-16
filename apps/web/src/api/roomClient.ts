@@ -137,7 +137,8 @@ export async function getRoomDiagnostics(roomId: string): Promise<RoomDiagnostic
 export function subscribeRoom(
    roomId: string,
    onEvent: (event: RoomEvent) => void,
-   onError?: () => void
+   onError?: () => void,
+   onOpen?: () => void
 ): () => void {
    const source = new EventSource(
       `/api/v2/rooms/${encodeURIComponent(roomId)}/events`,
@@ -152,6 +153,7 @@ export function subscribeRoom(
       }
    };
    source.onerror = () => onError?.();
+   source.onopen = () => onOpen?.();
 
    return () => source.close();
 }

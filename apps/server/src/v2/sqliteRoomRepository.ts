@@ -12,12 +12,23 @@ import type {
 
 const schemaVersion = 3;
 
+export type UploadCommitFaultPhase = "after-item-update" | "before-commit";
+
+export interface SqliteRoomRepositoryOptions {
+   uploadCommitFault?: (
+      phase: UploadCommitFaultPhase,
+      context: { itemId: string; endOffset: number }
+   ) => void;
+}
+
 export class SqliteRoomRepository implements RoomRepository {
    private readonly path: string;
+   private readonly uploadCommitFault: SqliteRoomRepositoryOptions["uploadCommitFault"];
    private database: DatabaseSync | undefined;
 
-   constructor(path: string) {
+   constructor(path: string, options: SqliteRoomRepositoryOptions = {}) {
       this.path = path;
+      this.uploadCommitFault = options.uploadCommitFault;
    }
 
    async initialize(): Promise<void> {
@@ -281,6 +292,10 @@ export class SqliteRoomRepository implements RoomRepository {
 
       try {
          this.updateItem(item);
+         this.uploadCommitFault?.("after-item-update", {
+            itemId: item.itemId,
+            endOffset: commit.endOffset
+         });
          database.prepare(`
             INSERT INTO upload_commits(
                item_id, idempotency_key, start_offset, end_offset, checksum, created_at
@@ -293,6 +308,10 @@ export class SqliteRoomRepository implements RoomRepository {
             commit.checksum,
             commit.createdAt
          );
+         this.uploadCommitFault?.("before-commit", {
+            itemId: item.itemId,
+            endOffset: commit.endOffset
+         });
          database.exec("COMMIT");
       } catch (error) {
          database.exec("ROLLBACK");

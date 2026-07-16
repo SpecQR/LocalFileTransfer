@@ -1,4 +1,11 @@
 $ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.Net.Http
+
+$HttpHandler = [Net.Http.HttpClientHandler]::new()
+$HttpHandler.UseProxy = $false
+$HttpClient = [Net.Http.HttpClient]::new($HttpHandler)
+$HttpClient.Timeout = [TimeSpan]::FromSeconds(5)
+$LftLastHttpError = $null
 
 function Get-TestProcesses {
    return @(Get-CimInstance Win32_Process | Where-Object {
@@ -51,26 +58,26 @@ function Wait-Until {
 function Invoke-LocalHttp {
    param([Parameter(Mandatory)] [string] $Url)
 
-   $request = [Net.HttpWebRequest]::CreateHttp($Url)
-   $request.Proxy = $null
-   $request.Timeout = 3000
-   $request.ReadWriteTimeout = 3000
-   $request.KeepAlive = $false
-   $response = [Net.HttpWebResponse]$request.GetResponse()
+   $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Get, $Url)
+   $request.Headers.ConnectionClose = $true
+   $response = $null
 
    try {
-      $reader = [IO.StreamReader]::new($response.GetResponseStream())
+      $response = $HttpClient.SendAsync(
+         $request,
+         [Net.Http.HttpCompletionOption]::ResponseContentRead
+      ).GetAwaiter().GetResult()
 
-      try {
-         return [pscustomobject]@{
-            StatusCode = [int]$response.StatusCode
-            Content = $reader.ReadToEnd()
-         }
-      } finally {
-         $reader.Dispose()
+      return [pscustomobject]@{
+         StatusCode = [int]$response.StatusCode
+         Content = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
       }
    } finally {
-      $response.Dispose()
+      if ($response) {
+         $response.Dispose()
+      }
+
+      $request.Dispose()
    }
 }
 
@@ -81,13 +88,27 @@ function Wait-HttpOk {
    )
 
    $script:LftHttpResult = $null
-   Wait-Until -Description $Url -TimeoutSeconds $TimeoutSeconds -Condition {
-      try {
-         $script:LftHttpResult = Invoke-LocalHttp -Url $Url
-         return $script:LftHttpResult.StatusCode -eq 200
-      } catch {
-         return $false
+   $script:LftLastHttpError = $null
+
+   try {
+      Wait-Until -Description $Url -TimeoutSeconds $TimeoutSeconds -Condition {
+         try {
+            $script:LftHttpResult = Invoke-LocalHttp -Url $Url
+            $script:LftLastHttpError = $null
+            return $script:LftHttpResult.StatusCode -eq 200
+         } catch {
+            $script:LftLastHttpError = $_.Exception.Message
+            return $false
+         }
       }
+   } catch {
+      $suffix = if ($script:LftLastHttpError) {
+         " Last HTTP error: $script:LftLastHttpError"
+      } else {
+         ""
+      }
+
+      throw ($_.Exception.Message + $suffix)
    }
 
    return $script:LftHttpResult
@@ -127,6 +148,10 @@ $Launcher = $null
 $TrackedIds = [Collections.Generic.HashSet[int]]::new()
 $StartedAt = Get-Date
 $Evidence = $null
+$LaunchArguments = @(
+   "--user-data-dir=" + $UserData,
+   "--disable-gpu"
+)
 
 if (-not (Test-Path -LiteralPath $Artifact -PathType Leaf)) {
    throw "Portable artifact was not found: $Artifact"
@@ -142,7 +167,7 @@ try {
 
    try {
       $Launcher = Start-Process -FilePath $Artifact `
-         -ArgumentList ("--user-data-dir=" + $UserData) `
+         -ArgumentList $LaunchArguments `
          -WindowStyle Hidden `
          -PassThru
       [void]$TrackedIds.Add($Launcher.Id)
@@ -232,6 +257,7 @@ try {
       initialAppStatus = [int]$App.StatusCode
       processCountBeforeInterruption = $BeforeProcesses.Count
       utilityInterruptionInjected = $true
+      gpuDisabledForSmoke = $true
       recoveredPort = $RecoveredPort
       recoveredHealthStatus = [int]$RecoveredHealth.StatusCode
       recoveredHealthBody = $RecoveredHealth.Content
@@ -266,6 +292,7 @@ try {
       $json + [Environment]::NewLine,
       [Text.UTF8Encoding]::new($false)
    )
+   Remove-Item -LiteralPath (Join-Path $releaseEvidenceDir "PACKAGED_SMOKE_FAILURE.json") -Force -ErrorAction SilentlyContinue
    $Evidence | ConvertTo-Json -Depth 8
 } catch {
    $failureDir = Join-Path $Root "docs\release\$Version"
@@ -274,6 +301,8 @@ try {
       testedAt = (Get-Date).ToUniversalTime().ToString("o")
       artifact = $ArtifactName
       error = $_.Exception.Message
+      lastHttpError = $script:LftLastHttpError
+      gpuDisabledForSmoke = $true
       logRecords = @(Get-LogRecords)
       processes = @(Get-TestProcesses | Select-Object ProcessId, ParentProcessId, Name, CommandLine)
    }
@@ -319,6 +348,9 @@ try {
    if ($cleanupResidual.Count -ne 0) {
       throw "Isolated smoke processes remain after cleanup: $($cleanupResidual.ProcessId -join ',')"
    }
+
+   $HttpClient.Dispose()
+   $HttpHandler.Dispose()
 
    $tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
    $resolvedRunRoot = [IO.Path]::GetFullPath($RunRoot)

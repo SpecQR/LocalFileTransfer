@@ -126,6 +126,16 @@ test("one QR room transfers both ways and keeps the compact desktop layout stabl
       await page.goto(joinUrl.toString());
       await expect(page.locator(".room-mobile")).toBeVisible();
       await expect(page.getByRole("heading", { name: mobileText.connected })).toBeVisible();
+      await expect(desktopPage.locator(".room-recovery")).toHaveCount(0);
+      await expect(page.locator(".room-recovery")).toHaveCount(0);
+
+      await page.context().setOffline(true);
+      await page.evaluate(() => window.dispatchEvent(new Event("offline")));
+      await expect(page.locator(".room-recovery")).toBeVisible();
+      await page.context().setOffline(false);
+      await page.evaluate(() => window.dispatchEvent(new Event("online")));
+      await expect(page.getByRole("heading", { name: mobileText.connected })).toBeVisible();
+      await expect(page.locator(".room-recovery")).toHaveCount(0);
 
       await desktopPage.getByLabel(desktopText.diagnostics).click();
       const desktopDiagnostics = desktopPage.getByRole("dialog");

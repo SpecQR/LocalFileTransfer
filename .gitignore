@@ -24,3 +24,9 @@ coverage/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Release evidence is generated in CI and attached to GitHub Releases.
+# Keep only the human-authored notes in a new release source directory.
+/docs/RC*_PACKAGED_SMOKE.json
+/docs/release/*/*
+!/docs/release/*/RELEASE_NOTES.md

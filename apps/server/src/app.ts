@@ -20,6 +20,7 @@ export interface AppDeps {
    config?: ServerConfig;
    sessions?: LocalLanSessionStore;
    rooms?: RoomStore;
+   enableLegacyRoutes?: boolean;
    onError?: (error: unknown, context: { method: string; statusCode: number }) => void;
    getDiagnostics?: () => Promise<RoomDiagnosticSnapshot>;
 }
@@ -36,12 +37,6 @@ export async function buildApp(deps: AppDeps = {}): Promise<FastifyInstance> {
       },
       bodyLimit: config.limits.uploadChunkSize + 64 * 1024,
       disableRequestLogging: true
-   });
-   const sessions = deps.sessions ?? new LocalLanSessionStore({
-      rootDir: config.storageDir,
-      ttlMs: config.sessionTtlMs,
-      hardTtlMs: config.sessionHardTtlMs,
-      limits: config.limits
    });
    const rooms = deps.rooms ?? new RoomStore({
       repository: new SqliteRoomRepository(join(config.storageDir, "rooms.sqlite")),
@@ -85,7 +80,17 @@ export async function buildApp(deps: AppDeps = {}): Promise<FastifyInstance> {
 
    app.get("/healthz", async () => ({ ok: true }));
 
-   await registerLocalRoutes(app, { config, sessions });
+   if (deps.enableLegacyRoutes) {
+      const sessions = deps.sessions ?? new LocalLanSessionStore({
+         rootDir: config.storageDir,
+         ttlMs: config.sessionTtlMs,
+         hardTtlMs: config.sessionHardTtlMs,
+         limits: config.limits
+      });
+
+      await registerLocalRoutes(app, { config, sessions });
+   }
+
    const getDiagnostics = deps.getDiagnostics ?? (async (): Promise<RoomDiagnosticSnapshot> => ({
       version: "development",
       protocol: durableUploadProtocol,

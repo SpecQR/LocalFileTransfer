@@ -2,6 +2,23 @@
 
 公開上重要な変更をこの文書へ記録します。この repository の公開履歴は RC.2 から始まります。非公開 prototype と公開前 artifact は履歴に含めません。
 
+## [2.0.0-rc.3] - 2026-07-16
+
+### 強化
+
+- Upload の write、fsync、SQLite commit、ACK 境界へ fault injection と recovery test を追加。
+- Partial file truncate、SQLite offset rewind、ACK loss 後の idempotent completion recovery を実装。
+- SSE/polling/online lifecycle と sleep/resume/adapter refresh を統合し、失敗時だけ reconnect UI を表示。
+- Recovery diagnostics を匿名化し、通常の compact UX を維持。
+- Legacy `/api/local/*` を既定無効化し、旧 `PUT .../chunks` public endpoint を廃止。
+- Tag-driven x64/ARM64 release、SBOM、SHA-256 manifest、GitHub Artifact Attestation を追加。
+
+### 検証上の注意
+
+- Authenticode: 未署名。
+- 物理 iPhone Safari、Android Chrome、Windows on ARM runtime: manual qualification item。
+- GitHub Artifact Attestation は build provenance を証明するが、publisher identity を証明しない。
+
 ## [2.0.0-rc.2] - 2026-07-16
 
 ### 追加
@@ -22,3 +39,4 @@
 - 物理 iPhone Safari と Android Chrome: manual qualification gate として未実施。
 
 [2.0.0-rc.2]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.2
+[2.0.0-rc.3]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.3
