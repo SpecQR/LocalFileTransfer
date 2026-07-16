@@ -13,18 +13,18 @@ import {
 } from "./release-assets-lib.mjs";
 
 test("release identity binds package version to the exact tag", () => {
-   assert.equal(assertReleaseIdentity("2.0.0-rc.3", "v2.0.0-rc.3"), "v2.0.0-rc.3");
+   assert.equal(assertReleaseIdentity("2.0.0-rc.4", "v2.0.0-rc.4"), "v2.0.0-rc.4");
    assert.throws(
-      () => assertReleaseIdentity("2.0.0-rc.3", "v2.0.0-rc.2"),
+      () => assertReleaseIdentity("2.0.0-rc.4", "v2.0.0-rc.2"),
       /does not match/u
    );
    assert.throws(() => assertReleaseIdentity("../escape", "v../escape"), /Invalid release version/u);
 });
 
 test("release artifact names are versioned and architecture-specific", () => {
-   assert.deepEqual(expectedArtifactNames("2.0.0-rc.3"), [
-      "Local.File.Transfer-2.0.0-rc.3-arm64-Portable.exe",
-      "Local.File.Transfer-2.0.0-rc.3-x64-Portable.exe"
+   assert.deepEqual(expectedArtifactNames("2.0.0-rc.4"), [
+      "Local.File.Transfer-2.0.0-rc.4-arm64-Portable.exe",
+      "Local.File.Transfer-2.0.0-rc.4-x64-Portable.exe"
    ]);
 });
 
@@ -52,16 +52,16 @@ test("build provenance contains only allowlisted public context", () => {
    const provenance = createBuildProvenance({
       generatedAt: "2026-07-16T00:00:00.000Z",
       product: "local-file-transfer",
-      version: "2.0.0-rc.3",
+      version: "2.0.0-rc.4",
       source: {
          repository: "https://github.com/SpecQR/LocalFileTransfer.git",
          commit: "a".repeat(40),
-         ref: "refs/tags/v2.0.0-rc.3",
-         tag: "v2.0.0-rc.3"
+         ref: "refs/tags/v2.0.0-rc.4",
+         tag: "v2.0.0-rc.4"
       },
       builder: {
          kind: "github-actions",
-         workflow: "RC.3 prerelease",
+         workflow: "RC.4 prerelease",
          runId: "12345",
          runAttempt: "1",
          runnerOs: "Windows",
@@ -74,7 +74,7 @@ test("build provenance contains only allowlisted public context", () => {
       },
       gates: ["test"],
       artifacts: [{
-         name: "Local.File.Transfer-2.0.0-rc.3-x64-Portable.exe",
+         name: "Local.File.Transfer-2.0.0-rc.4-x64-Portable.exe",
          size: 1,
          sha256: "A".repeat(64),
          architecture: "x64",

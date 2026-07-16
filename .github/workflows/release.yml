@@ -20,7 +20,7 @@ jobs:
    release:
       name: Windows Portable を検証して公開
       if: github.ref_type == 'tag'
-      runs-on: windows-latest
+      runs-on: windows-2022
       timeout-minutes: 90
       env:
          LFT_RELEASE_TAG: ${{ github.ref_name }}
@@ -98,6 +98,15 @@ jobs:
            run: npm run test:visual
          - name: x64 packaged recovery smoke
            run: npm run test:packaged
+
+         - name: Packaged smoke failure evidence を保存
+           if: failure()
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+              name: Local.File.Transfer-${{ env.LFT_VERSION }}-packaged-smoke-failure
+              path: docs/release/${{ env.LFT_VERSION }}/PACKAGED_SMOKE_FAILURE.json
+              if-no-files-found: ignore
+              retention-days: 14
 
          - name: SBOM と release evidence を生成
            run: npm run release:evidence

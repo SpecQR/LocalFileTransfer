@@ -42,6 +42,7 @@ let structuredLog: RotatingJsonLog | undefined;
 let structuredLogStatus: "ready" | "unavailable" = "unavailable";
 const recentErrorCodes: string[] = [];
 let runtime: ServiceRuntime | undefined;
+let smokeLoopbackOnly = false;
 let serviceVersion = "unknown";
 let serviceRestarts = 0;
 let serviceStartedAt = Date.now();
@@ -160,7 +161,7 @@ async function execute(action: ServiceAction, payload: unknown): Promise<unknown
 
          runtime = {
             ...runtime,
-            lanUrls: lanOrigins(runtime.port)
+            lanUrls: smokeLoopbackOnly ? [runtime.localUrl] : lanOrigins(runtime.port)
          };
          return runtime;
       }
@@ -198,6 +199,11 @@ async function initializeService(input: ServiceInitPayload): Promise<ServiceRunt
 
    await initializeStructuredLog(logDir);
    const candidateHashes = new SourceHashPool({ maxWorkers: 2, maxCacheEntries: 256 });
+   const listenHost = process.env.LFT_SMOKE_LOOPBACK_ONLY === "1"
+      ? "127.0.0.1"
+      : "0.0.0.0";
+
+   smokeLoopbackOnly = listenHost === "127.0.0.1";
 
    for (let offset = 0; offset < input.maxPortAttempts; offset += 1) {
       const port = input.portStart + offset;
@@ -243,7 +249,7 @@ async function initializeService(input: ServiceInitPayload): Promise<ServiceRunt
       try {
          await candidate.listen({
             port,
-            host: "0.0.0.0"
+            host: listenHost
          });
          app = candidate;
          rooms = candidateRooms;
@@ -252,13 +258,16 @@ async function initializeService(input: ServiceInitPayload): Promise<ServiceRunt
          writeServiceLog("info", "service-ready", {
             port,
             version: serviceVersion,
-            serviceRestarts
+            serviceRestarts,
+            listenHost
          });
+
+         const localUrl = `http://127.0.0.1:${port}`;
 
          return {
             port,
-            localUrl: `http://127.0.0.1:${port}`,
-            lanUrls: lanOrigins(port),
+            localUrl,
+            lanUrls: smokeLoopbackOnly ? [localUrl] : lanOrigins(port),
             receiveDir: input.receiveDir,
             logDir
          };
@@ -312,6 +321,7 @@ async function closeService(): Promise<void> {
    structuredLog = undefined;
    structuredLogStatus = "unavailable";
    runtime = undefined;
+   smokeLoopbackOnly = false;
 
    if (activeApp) {
       await activeApp.close();

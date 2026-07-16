@@ -2,7 +2,7 @@
 
 ## 目的
 
-Local File Transfer 2.0.0-rc.3 は、通常時の 300 CSS px UI と操作数を増やさず、失敗時の回復可能性と観測可能性を強化します。中心となる契約は次です。
+Local File Transfer 2.0.0-rc.4 は、通常時の 300 CSS px UI と操作数を増やさず、失敗時の回復可能性と観測可能性を強化します。中心となる契約は次です。
 
 > Browser に acknowledged offset を返した checkpoint は、partial file の `fsync` と SQLite transaction commit の両方が完了している。
 
@@ -86,7 +86,7 @@ Room、SQLite、listener を不要に作り直さず、到達可能な preferred
 
 ## Compatibility surface
 
-RC.3 の既定 runtime は canonical `/api/v2` room API だけを公開します。
+RC.4 の既定 runtime は canonical `/api/v2` room API だけを公開します。
 
 - `/api/local/*` は `buildApp({ enableLegacyRoutes: true })` の test-only opt-in 時だけ register する。
 - 旧 `PUT /api/v2/rooms/:roomId/uploads/:itemId/chunks` は public route から削除した。

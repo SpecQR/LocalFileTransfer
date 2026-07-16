@@ -1,10 +1,5 @@
 $ErrorActionPreference = "Stop"
-Add-Type -AssemblyName System.Net.Http
-
-$HttpHandler = [Net.Http.HttpClientHandler]::new()
-$HttpHandler.UseProxy = $false
-$HttpClient = [Net.Http.HttpClient]::new($HttpHandler)
-$HttpClient.Timeout = [TimeSpan]::FromSeconds(5)
+$CurlPath = (Get-Command curl.exe -ErrorAction Stop).Source
 $LftLastHttpError = $null
 
 function Get-TestProcesses {
@@ -42,45 +37,65 @@ function Wait-Until {
       [Parameter(Mandatory)] [scriptblock] $Condition
    )
 
-   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+   $stopwatch = [Diagnostics.Stopwatch]::StartNew()
 
-   while ((Get-Date) -lt $deadline) {
+   while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
       if (& $Condition) {
+         $stopwatch.Stop()
          return
       }
 
       Start-Sleep -Milliseconds 200
    }
 
+   $stopwatch.Stop()
    throw "Timed out waiting for $Description"
 }
 
 function Invoke-LocalHttp {
    param([Parameter(Mandatory)] [string] $Url)
 
-   $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Get, $Url)
-   $request.Headers.ConnectionClose = $true
-   $response = $null
+   $marker = "__LFT_HTTP_STATUS__:"
+   $writeOut = [Environment]::NewLine + $marker + "%{http_code}"
+   $arguments = @(
+      "--ipv4",
+      "--noproxy", "*",
+      "--silent",
+      "--show-error",
+      "--connect-timeout", "2",
+      "--max-time", "5",
+      "--header", "Connection: close",
+      "--write-out", $writeOut,
+      $Url
+   )
+   $output = @(& $CurlPath @arguments 2>&1)
+   $exitCode = $LASTEXITCODE
+   $text = ($output | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
 
-   try {
-      $response = $HttpClient.SendAsync(
-         $request,
-         [Net.Http.HttpCompletionOption]::ResponseContentRead
-      ).GetAwaiter().GetResult()
+   if ($exitCode -ne 0) {
+      throw "curl.exe exited with code ${exitCode}: $text"
+   }
 
-      return [pscustomobject]@{
-         StatusCode = [int]$response.StatusCode
-         Content = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-      }
-   } finally {
-      if ($response) {
-         $response.Dispose()
-      }
+   $markerIndex = $text.LastIndexOf([Environment]::NewLine + $marker)
 
-      $request.Dispose()
+   if ($markerIndex -lt 0) {
+      throw "curl.exe response did not contain an HTTP status marker"
+   }
+
+   $statusText = $text.Substring(
+      $markerIndex + [Environment]::NewLine.Length + $marker.Length
+   ).Trim()
+   $statusCode = 0
+
+   if (-not [int]::TryParse($statusText, [ref]$statusCode)) {
+      throw "curl.exe returned an invalid HTTP status: $statusText"
+   }
+
+   return [pscustomobject]@{
+      StatusCode = $statusCode
+      Content = $text.Substring(0, $markerIndex)
    }
 }
-
 function Wait-HttpOk {
    param(
       [Parameter(Mandatory)] [string] $Url,
@@ -162,8 +177,10 @@ New-Item -ItemType Directory -Path $UserData, $Storage, $Receive -Force | Out-Nu
 try {
    $savedStorage = $env:LFT_STORAGE_DIR
    $savedReceive = $env:LFT_RECEIVE_DIR
+   $savedSmokeLoopbackOnly = $env:LFT_SMOKE_LOOPBACK_ONLY
    $env:LFT_STORAGE_DIR = $Storage
    $env:LFT_RECEIVE_DIR = $Receive
+   $env:LFT_SMOKE_LOOPBACK_ONLY = "1"
 
    try {
       $Launcher = Start-Process -FilePath $Artifact `
@@ -174,6 +191,7 @@ try {
    } finally {
       $env:LFT_STORAGE_DIR = $savedStorage
       $env:LFT_RECEIVE_DIR = $savedReceive
+      $env:LFT_SMOKE_LOOPBACK_ONLY = $savedSmokeLoopbackOnly
    }
 
    Wait-Until -Description "first service-ready record" -TimeoutSeconds 90 -Condition {
@@ -258,6 +276,10 @@ try {
       processCountBeforeInterruption = $BeforeProcesses.Count
       utilityInterruptionInjected = $true
       gpuDisabledForSmoke = $true
+      httpProbe = "curl-ipv4-direct"
+      loopbackOnlyForSmoke = $true
+      runnerImage = $env:ImageOS
+      runnerImageVersion = $env:ImageVersion
       recoveredPort = $RecoveredPort
       recoveredHealthStatus = [int]$RecoveredHealth.StatusCode
       recoveredHealthBody = $RecoveredHealth.Content
@@ -303,6 +325,10 @@ try {
       error = $_.Exception.Message
       lastHttpError = $script:LftLastHttpError
       gpuDisabledForSmoke = $true
+      httpProbe = "curl-ipv4-direct"
+      loopbackOnlyForSmoke = $true
+      runnerImage = $env:ImageOS
+      runnerImageVersion = $env:ImageVersion
       logRecords = @(Get-LogRecords)
       processes = @(Get-TestProcesses | Select-Object ProcessId, ParentProcessId, Name, CommandLine)
    }
@@ -313,6 +339,7 @@ try {
       ($failureEvidence | ConvertTo-Json -Depth 8) + [Environment]::NewLine,
       [Text.UTF8Encoding]::new($false)
    )
+   [Console]::Error.WriteLine("PACKAGED_SMOKE_FAILURE=" + ($failureEvidence | ConvertTo-Json -Depth 8 -Compress))
    throw
 } finally {
    Add-TrackedProcesses
@@ -348,9 +375,6 @@ try {
    if ($cleanupResidual.Count -ne 0) {
       throw "Isolated smoke processes remain after cleanup: $($cleanupResidual.ProcessId -join ',')"
    }
-
-   $HttpClient.Dispose()
-   $HttpHandler.Dispose()
 
    $tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
    $resolvedRunRoot = [IO.Path]::GetFullPath($RunRoot)

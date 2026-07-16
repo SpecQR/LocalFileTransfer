@@ -2,6 +2,15 @@
 
 公開上重要な変更をこの文書へ記録します。この repository の公開履歴は RC.2 から始まります。非公開 prototype と公開前 artifact は履歴に含めません。
 
+## [2.0.0-rc.4] - 2026-07-17
+
+### Release engineering
+
+- RC.3 の app/reliability changes を維持したまま、release qualification runner を `windows-2022` に固定しました。
+- Packaged smoke の loopback probe を proxy 非依存の `curl.exe --ipv4 --noproxy "*"` に変更しました。
+- Packaged smoke failure は匿名化 JSON を Actions log と workflow artifact に残します。
+- `v2.0.0-rc.3` は Windows Server 2025 hosted runner 上の release gate で停止し、GitHub Release は公開されませんでした。Tag は履歴として書き換えません。
+
 ## [2.0.0-rc.3] - 2026-07-16
 
 ### 強化
@@ -39,4 +48,5 @@
 - 物理 iPhone Safari と Android Chrome: manual qualification gate として未実施。
 
 [2.0.0-rc.2]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.2
-[2.0.0-rc.3]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.3
+[2.0.0-rc.4]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.4
+[2.0.0-rc.3]: https://github.com/SpecQR/LocalFileTransfer/tree/v2.0.0-rc.3

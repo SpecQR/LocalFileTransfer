@@ -1,6 +1,6 @@
 {
    "name": "local-file-transfer",
-   "version": "2.0.0-rc.3",
+   "version": "2.0.0-rc.4",
    "description": "Portable local-network file and text transfer between Windows and modern browsers",
    "author": "SpecQR contributors",
    "license": "MIT",

@@ -1,6 +1,6 @@
 # Shared text 設計
 
-Local File Transfer `2.0.0-rc.3` は、file queue と同じ room に 1 件の note を持ちます。
+Local File Transfer `2.0.0-rc.4` は、file queue と同じ room に 1 件の note を持ちます。
 
 これは chat、character-by-character collaborative editing、clipboard monitoring、history service ではありません。
 
