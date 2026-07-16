@@ -1,0 +1,90 @@
+{
+   "schemaVersion": 1,
+   "generatedAt": "2026-07-16T10:40:47.668Z",
+   "product": "local-file-transfer",
+   "version": "2.0.0-rc.2",
+   "runtime": {
+      "node": "v24.15.0",
+      "npm": "11.12.1",
+      "platform": "win32",
+      "architecture": "arm64"
+   },
+   "dependencyCount": 471,
+   "licenseExpressionCount": 12,
+   "sboms": {
+      "root": {
+         "file": "SBOM-root.cdx.json",
+         "format": "CycloneDX",
+         "specVersion": "1.5",
+         "components": 7
+      },
+      "server": {
+         "file": "SBOM-server.cdx.json",
+         "format": "CycloneDX",
+         "specVersion": "1.5",
+         "components": 85
+      },
+      "web": {
+         "file": "SBOM-web.cdx.json",
+         "format": "CycloneDX",
+         "specVersion": "1.5",
+         "components": 123
+      },
+      "desktop": {
+         "file": "SBOM-desktop.cdx.json",
+         "format": "CycloneDX",
+         "specVersion": "1.5",
+         "components": 342
+      }
+   },
+   "audits": {
+      "root": {
+         "info": 0,
+         "low": 0,
+         "moderate": 0,
+         "high": 0,
+         "critical": 0,
+         "total": 0
+      },
+      "server": {
+         "info": 0,
+         "low": 0,
+         "moderate": 0,
+         "high": 0,
+         "critical": 0,
+         "total": 0
+      },
+      "web": {
+         "info": 0,
+         "low": 0,
+         "moderate": 0,
+         "high": 0,
+         "critical": 0,
+         "total": 0
+      },
+      "desktop": {
+         "info": 0,
+         "low": 0,
+         "moderate": 0,
+         "high": 0,
+         "critical": 0,
+         "total": 0
+      }
+   },
+   "artifacts": [
+      {
+         "name": "Local File Transfer-2.0.0-rc.2-arm64-Portable.exe",
+         "size": 96761317,
+         "sha256": "07FE5DB06E8059E4F81A35689C522D6414F4D67C0D7C0B60AF9B149E7B4E0172",
+         "architecture": "arm64",
+         "authenticode": "NotSigned"
+      },
+      {
+         "name": "Local File Transfer-2.0.0-rc.2-x64-Portable.exe",
+         "size": 105186228,
+         "sha256": "2A204299CAF932DF4BD13202E8A9F0D0FD44B4973CCDB28B13D5A70165FF1DAD",
+         "architecture": "x64",
+         "authenticode": "NotSigned"
+      }
+   ]
+}

@@ -1,0 +1,337 @@
+{
+   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+   "bomFormat": "CycloneDX",
+   "specVersion": "1.5",
+   "serialNumber": "urn:uuid:334f4c72-6ddc-4733-a2ce-7101bdd1c6ed",
+   "version": 1,
+   "metadata": {
+      "timestamp": "2026-07-16T10:40:48.374Z",
+      "lifecycles": [
+         {
+            "phase": "pre-build"
+         }
+      ],
+      "tools": [
+         {
+            "vendor": "npm",
+            "name": "cli",
+            "version": "11.12.1"
+         }
+      ],
+      "component": {
+         "bom-ref": "local-file-transfer@2.0.0-rc.2",
+         "type": "library",
+         "name": "LocalFileTransfer",
+         "version": "2.0.0-rc.2",
+         "scope": "required",
+         "author": "SpecQR contributors",
+         "description": "Portable local-network file and text transfer between Windows and modern browsers",
+         "purl": "pkg:npm/local-file-transfer@2.0.0-rc.2",
+         "properties": [
+            {
+               "name": "cdx:npm:package:private",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "vcs",
+               "url": "https://github.com/SpecQR/LocalFileTransfer.git"
+            },
+            {
+               "type": "website",
+               "url": "https://github.com/SpecQR/LocalFileTransfer#readme"
+            },
+            {
+               "type": "issue-tracker",
+               "url": "https://github.com/SpecQR/LocalFileTransfer/issues"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "MIT"
+               }
+            }
+         ]
+      }
+   },
+   "components": [
+      {
+         "bom-ref": "@playwright/test@1.61.1",
+         "type": "library",
+         "name": "@playwright/test",
+         "version": "1.61.1",
+         "scope": "optional",
+         "purl": "pkg:npm/%40playwright/test@1.61.1",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/@playwright/test/-/test-1.61.1.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "f272afebed112522fd144e2360e1065e73de33f1e0d76a99a66ab3663461dea33463b737cf59ab3937c52e276cef6443418561f56a4b11f47959da4d5f87e48a"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "Apache-2.0"
+               }
+            }
+         ]
+      },
+      {
+         "bom-ref": "@types/node@25.9.1",
+         "type": "library",
+         "name": "@types/node",
+         "version": "25.9.1",
+         "scope": "optional",
+         "purl": "pkg:npm/%40types/node@25.9.1",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/@types/node/-/node-25.9.1.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "c5fae563b503e6b30993765524ff013734b6f09dfa60983ec69f8b3d75754dd5b1afcb8c1f903ceb440dc580c641eff29434a08f1139d90f559ceee9ef9b49c6"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "MIT"
+               }
+            }
+         ]
+      },
+      {
+         "bom-ref": "fsevents@2.3.2",
+         "type": "library",
+         "name": "fsevents",
+         "version": "2.3.2",
+         "scope": "optional",
+         "purl": "pkg:npm/fsevents@2.3.2",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "c62a8c411e3101e1d3b81f6e5a6f9f1517083a02813223813fe7978b24fb8ec8150aad5b915ca0b74d28012a3007b11db6938769a3e02adf35d8ff5a6fe0c328"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "MIT"
+               }
+            }
+         ]
+      },
+      {
+         "bom-ref": "playwright@1.61.1",
+         "type": "library",
+         "name": "playwright",
+         "version": "1.61.1",
+         "scope": "optional",
+         "purl": "pkg:npm/playwright@1.61.1",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "0d69d8e68dd86cb58ae06a2fb80570a6a2fed55c0635d506ad1afefbc8fc3ed410cef01565420c8ca43dd1f63af3db042592416d9570d6b5da38a4938ad9333d"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "Apache-2.0"
+               }
+            }
+         ]
+      },
+      {
+         "bom-ref": "playwright-core@1.61.1",
+         "type": "library",
+         "name": "playwright-core",
+         "version": "1.61.1",
+         "scope": "optional",
+         "purl": "pkg:npm/playwright-core@1.61.1",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "87b425b7a9b8444a76e6abc876f6c3b55983e0ba955dfa51c61391bfd2f48f3113334e69e1fb8f27774acae4974310d26d79e64bbf470208bde7cf65192a4b92"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "Apache-2.0"
+               }
+            }
+         ]
+      },
+      {
+         "bom-ref": "typescript@6.0.3",
+         "type": "library",
+         "name": "typescript",
+         "version": "6.0.3",
+         "scope": "optional",
+         "purl": "pkg:npm/typescript@6.0.3",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "cb64efbb14993c3c906a490544f6472859be28a56a222b1d83dfc26709bd7edbca5cb3fc3515a3dfcfce0e335baf8dd2b285ea36e022b047f519d0b1a9671d07"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "Apache-2.0"
+               }
+            }
+         ]
+      },
+      {
+         "bom-ref": "undici-types@7.24.6",
+         "type": "library",
+         "name": "undici-types",
+         "version": "7.24.6",
+         "scope": "optional",
+         "purl": "pkg:npm/undici-types@7.24.6",
+         "properties": [
+            {
+               "name": "cdx:npm:package:development",
+               "value": "true"
+            }
+         ],
+         "externalReferences": [
+            {
+               "type": "distribution",
+               "url": "https://registry.npmjs.org/undici-types/-/undici-types-7.24.6.tgz"
+            }
+         ],
+         "hashes": [
+            {
+               "alg": "SHA-512",
+               "content": "591356fac2608f9381378ff42691c5aadab38696e75741ae07e3a8cc0f6008bedaf7ddd2994fb5241642ccb37162c6cc7c87832fe953b29843e6337937e9f4ce"
+            }
+         ],
+         "licenses": [
+            {
+               "license": {
+                  "id": "MIT"
+               }
+            }
+         ]
+      }
+   ],
+   "dependencies": [
+      {
+         "ref": "local-file-transfer@2.0.0-rc.2",
+         "dependsOn": [
+            "@playwright/test@1.61.1",
+            "@types/node@25.9.1",
+            "typescript@6.0.3"
+         ]
+      },
+      {
+         "ref": "@playwright/test@1.61.1",
+         "dependsOn": [
+            "playwright@1.61.1"
+         ]
+      },
+      {
+         "ref": "@types/node@25.9.1",
+         "dependsOn": [
+            "undici-types@7.24.6"
+         ]
+      },
+      {
+         "ref": "fsevents@2.3.2",
+         "dependsOn": []
+      },
+      {
+         "ref": "playwright@1.61.1",
+         "dependsOn": [
+            "playwright-core@1.61.1",
+            "fsevents@2.3.2"
+         ]
+      },
+      {
+         "ref": "playwright-core@1.61.1",
+         "dependsOn": []
+      },
+      {
+         "ref": "typescript@6.0.3",
+         "dependsOn": []
+      },
+      {
+         "ref": "undici-types@7.24.6",
+         "dependsOn": []
+      }
+   ]
+}

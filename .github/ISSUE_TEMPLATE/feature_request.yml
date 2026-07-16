@@ -1,0 +1,33 @@
+name: 改善提案
+description: UX、互換性、信頼性、文書の改善を提案します
+title: "[提案] "
+labels:
+   - enhancement
+body:
+   - type: textarea
+     id: problem
+     attributes:
+        label: 解決したい問題
+        description: 現在どのような場面で困るかを記載してください
+     validations:
+        required: true
+   - type: textarea
+     id: proposal
+     attributes:
+        label: 提案する挙動
+        description: User workflow と期待する結果を記載してください
+     validations:
+        required: true
+   - type: textarea
+     id: alternatives
+     attributes:
+        label: 検討した代替案
+   - type: checkboxes
+     id: boundaries
+     attributes:
+        label: Product boundary の確認
+        options:
+           - label: Local-only、no account、no cloud relay という現在の方針を理解しています
+             required: true
+           - label: 投稿内容に personal data、live QR、credential が含まれていません
+             required: true

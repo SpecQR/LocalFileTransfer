@@ -1,0 +1,48 @@
+{
+   "name": "local-file-transfer",
+   "version": "2.0.0-rc.2",
+   "description": "Portable local-network file and text transfer between Windows and modern browsers",
+   "author": "SpecQR contributors",
+   "license": "MIT",
+   "private": true,
+   "type": "module",
+   "homepage": "https://github.com/SpecQR/LocalFileTransfer#readme",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/SpecQR/LocalFileTransfer.git"
+   },
+   "bugs": {
+      "url": "https://github.com/SpecQR/LocalFileTransfer/issues"
+   },
+   "scripts": {
+      "build": "npm run build --prefix apps/server && npm run build --prefix apps/web && npm run build --prefix apps/desktop",
+      "build:web": "npm run build --prefix apps/web",
+      "build:desktop": "npm run build --prefix apps/desktop",
+      "dev:web": "npm run dev --prefix apps/web",
+      "dev:server": "npm run dev --prefix apps/server",
+      "dev:desktop": "npm run dev --prefix apps/desktop",
+      "dist:windows": "npm run dist --prefix apps/desktop",
+      "dist:windows:arm64": "npm run dist:arm64 --prefix apps/desktop",
+      "dist:windows:signed:x64": "npm run dist:signed:x64 --prefix apps/desktop",
+      "dist:windows:signed:arm64": "npm run dist:signed:arm64 --prefix apps/desktop",
+      "audit:public": "node scripts/audit-public-tree.mjs",
+      "release:evidence": "node scripts/generate-release-evidence.mjs",
+      "release:static-validation": "node scripts/generate-static-validation.mjs",
+      "verify:release-config": "npm run verify:release-config --prefix apps/desktop",
+      "test:visual": "node scripts/capture-scale-screenshots.mjs",
+      "test:packaged": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-packaged-windows.ps1",
+      "test": "node --test \"packages/**/*.test.ts\"",
+      "test:all": "npm test && npm run test:server && npm run test:web",
+      "test:server": "npm run test --prefix apps/server",
+      "test:web": "npm run test --prefix apps/web",
+      "test:e2e": "npm run build && tsc -p tsconfig.e2e.json && node scripts/run-e2e.mjs"
+   },
+   "engines": {
+      "node": ">=22"
+   },
+   "devDependencies": {
+      "@playwright/test": "1.61.1",
+      "@types/node": "25.9.1",
+      "typescript": "6.0.3"
+   }
+}

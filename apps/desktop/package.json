@@ -1,0 +1,76 @@
+{
+   "name": "local-file-transfer-desktop",
+   "version": "2.0.0-rc.2",
+   "description": "Portable local-network file and text transfer between Windows and modern browsers",
+   "author": "SpecQR contributors",
+   "license": "MIT",
+   "private": true,
+   "type": "module",
+   "main": "dist/main.cjs",
+   "homepage": "https://github.com/SpecQR/LocalFileTransfer#readme",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/SpecQR/LocalFileTransfer.git"
+   },
+   "scripts": {
+      "build": "tsc -p tsconfig.json --noEmit && esbuild src/main.ts --bundle --platform=node --format=cjs --outfile=dist/main.cjs --external:electron && esbuild src/service.ts --bundle --platform=node --format=cjs --outfile=dist/service.cjs --external:electron && esbuild src/preload.ts --bundle --platform=node --format=cjs --outfile=dist/preload.cjs --external:electron",
+      "dev": "npm run build --prefix ../web && npm run build && electron .",
+      "pack": "npm run build --prefix ../web && npm run build && electron-builder --dir",
+      "dist": "npm run build --prefix ../web && npm run build && electron-builder --win portable --x64",
+      "verify:fuses": "node scripts/verify-fuses.cjs \"release/win-unpacked/Local File Transfer.exe\"",
+      "verify:fuses:arm64": "node scripts/verify-fuses.cjs \"release/win-arm64-unpacked/Local File Transfer.exe\"",
+      "verify:release-config": "node scripts/verify-release-config.cjs",
+      "dist:arm64": "npm run build --prefix ../web && npm run build && electron-builder --win portable --arm64",
+      "dist:signed:x64": "node scripts/require-signing-env.cjs && npm run build --prefix ../web && npm run build && electron-builder --win portable --x64",
+      "dist:signed:arm64": "node scripts/require-signing-env.cjs && npm run build --prefix ../web && npm run build && electron-builder --win portable --arm64",
+      "postinstall": "node node_modules/electron/install.js"
+   },
+   "build": {
+      "appId": "local.file.transfer",
+      "productName": "Local File Transfer",
+      "electronFuses": {
+         "runAsNode": false,
+         "enableCookieEncryption": true,
+         "enableNodeOptionsEnvironmentVariable": false,
+         "enableNodeCliInspectArguments": false,
+         "enableEmbeddedAsarIntegrityValidation": true,
+         "onlyLoadAppFromAsar": true,
+         "loadBrowserProcessSpecificV8Snapshot": false,
+         "grantFileProtocolExtraPrivileges": false
+      },
+      "files": [
+         "dist/main.cjs",
+         "dist/service.cjs",
+         "dist/preload.cjs",
+         "package.json"
+      ],
+      "extraResources": [
+         {
+            "from": "../web/dist",
+            "to": "web"
+         }
+      ],
+      "directories": {
+         "output": "release"
+      },
+      "win": {
+         "target": [
+            "portable"
+         ]
+      },
+      "portable": {
+         "artifactName": "${productName}-${version}-${arch}-Portable.${ext}"
+      }
+   },
+   "dependencies": {
+      "fastify": "^5.8.5"
+   },
+   "devDependencies": {
+      "@electron/fuses": "2.1.3",
+      "@types/node": "^25.9.1",
+      "electron": "43.0.0",
+      "electron-builder": "^26.8.1",
+      "esbuild": "^0.28.0",
+      "typescript": "^6.0.3"
+   }
+}

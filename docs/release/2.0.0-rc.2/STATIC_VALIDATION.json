@@ -1,0 +1,125 @@
+{
+   "schemaVersion": 1,
+   "generatedAt": "2026-07-16T10:41:01.927Z",
+   "version": "2.0.0-rc.2",
+   "releaseConfig": {
+      "appId": "local.file.transfer",
+      "productName": "Local File Transfer",
+      "targets": [
+         "portable"
+      ],
+      "portableArtifactName": "${productName}-${version}-${arch}-Portable.${ext}",
+      "signingCredentialsEmbedded": false,
+      "updaterConfigured": false
+   },
+   "sharedText": {
+      "schemaVersion": 3,
+      "maximumUtf8Bytes": 65536,
+      "persistence": "AES-256-GCM ciphertext with a room capability-derived HKDF-SHA-256 key",
+      "endToEndEncrypted": false,
+      "eventPayload": "revision only"
+   },
+   "signing": {
+      "credentialsEmbedded": false,
+      "missingInputsRejected": true
+   },
+   "x64": {
+      "artifact": {
+         "name": "Local File Transfer-2.0.0-rc.2-x64-Portable.exe",
+         "size": 105186228,
+         "sha256": "2A204299CAF932DF4BD13202E8A9F0D0FD44B4973CCDB28B13D5A70165FF1DAD",
+         "architecture": "x64",
+         "authenticode": "NotSigned"
+      },
+      "pe": {
+         "machineHex": "0x8664",
+         "expectedMachineHex": "0x8664",
+         "passed": true
+      },
+      "fuses": {
+         "passed": true,
+         "values": {
+            "RunAsNode": "DISABLE",
+            "EnableCookieEncryption": "ENABLE",
+            "EnableNodeOptionsEnvironmentVariable": "DISABLE",
+            "EnableNodeCliInspectArguments": "DISABLE",
+            "EnableEmbeddedAsarIntegrityValidation": "ENABLE",
+            "OnlyLoadAppFromAsar": "ENABLE",
+            "LoadBrowserProcessSpecificV8Snapshot": "DISABLE",
+            "GrantFileProtocolExtraPrivileges": "DISABLE"
+         }
+      },
+      "packagedSmoke": {
+         "passed": true,
+         "schemaVersion": 1,
+         "testedAt": "2026-07-15T16:25:08.1807966Z",
+         "artifact": "Local File Transfer-2.0.0-rc.2-x64-Portable.exe",
+         "length": 105186228,
+         "sha256": "2A204299CAF932DF4BD13202E8A9F0D0FD44B4973CCDB28B13D5A70165FF1DAD",
+         "authenticodeStatus": "NotSigned",
+         "port": 8788,
+         "initialHealthStatus": 200,
+         "initialHealthBody": "{\"ok\":true}",
+         "initialAppStatus": 200,
+         "processCountBeforeInterruption": 7,
+         "utilityInterruptionInjected": true,
+         "recoveredPort": 8788,
+         "recoveredHealthStatus": 200,
+         "recoveredHealthBody": "{\"ok\":true}",
+         "recoveredAppStatus": 200,
+         "serviceReadyRecords": 2,
+         "serviceRestartCount": 1,
+         "interruptionRecoverySeconds": 1.339,
+         "sqliteCreated": true,
+         "structuredLogEvents": [
+            "service-starting",
+            "service-ready",
+            "service-starting",
+            "service-ready",
+            "service-stopped"
+         ],
+         "gracefulWindowClose": true,
+         "endpointClosed": true,
+         "residualProcesses": 0,
+         "launchSeconds": 11.483
+      }
+   },
+   "arm64": {
+      "artifact": {
+         "name": "Local File Transfer-2.0.0-rc.2-arm64-Portable.exe",
+         "size": 96761317,
+         "sha256": "07FE5DB06E8059E4F81A35689C522D6414F4D67C0D7C0B60AF9B149E7B4E0172",
+         "architecture": "arm64",
+         "authenticode": "NotSigned"
+      },
+      "pe": {
+         "machineHex": "0xAA64",
+         "expectedMachineHex": "0xAA64",
+         "passed": true
+      },
+      "fuses": {
+         "passed": true,
+         "values": {
+            "RunAsNode": "DISABLE",
+            "EnableCookieEncryption": "ENABLE",
+            "EnableNodeOptionsEnvironmentVariable": "DISABLE",
+            "EnableNodeCliInspectArguments": "DISABLE",
+            "EnableEmbeddedAsarIntegrityValidation": "ENABLE",
+            "OnlyLoadAppFromAsar": "ENABLE",
+            "LoadBrowserProcessSpecificV8Snapshot": "DISABLE",
+            "GrantFileProtocolExtraPrivileges": "DISABLE"
+         }
+      },
+      "physicalRuntimeGate": "Not run; requires a physical Windows on ARM device"
+   },
+   "scale": {
+      "factors": [
+         1,
+         1.25,
+         1.5,
+         2
+      ],
+      "passed": true,
+      "report": "scale-report.json"
+   }
+}

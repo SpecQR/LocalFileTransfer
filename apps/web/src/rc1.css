@@ -1,0 +1,214 @@
+/* RC.1 product controls layer. The established compact room geometry remains authoritative. */
+.room-mobile-tools {
+   align-items: center;
+   display: flex;
+   flex: 0 0 auto;
+   gap: 4px;
+}
+
+.room-selected-row {
+   align-items: center;
+   grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.room-selected-row > div {
+   display: grid;
+   gap: 2px;
+   min-width: 0;
+}
+
+.room-selected-remove {
+   height: 44px;
+   min-height: 44px;
+   min-width: 44px;
+   width: 44px;
+}
+
+.room-download-all {
+   align-items: center;
+   background: #e4efe9;
+   border: 1px solid #bfd2c8;
+   border-radius: 7px;
+   color: #175f52;
+   display: flex;
+   font-size: 0.9rem;
+   font-weight: 800;
+   gap: 8px;
+   justify-content: center;
+   margin-bottom: 14px;
+   min-height: 48px;
+   padding: 0 14px;
+   text-decoration: none;
+}
+
+.room-download-all:hover {
+   background: #d9e9e1;
+   border-color: #96b8a9;
+}
+
+.diagnostics-backdrop {
+   align-items: center;
+   background: rgb(21 34 29 / 42%);
+   display: flex;
+   inset: 0;
+   justify-content: center;
+   padding: 12px;
+   position: fixed;
+   z-index: 1000;
+}
+
+.diagnostics-dialog {
+   background: #f8faf8;
+   border: 1px solid #c7d5ce;
+   border-radius: 8px;
+   box-shadow: 0 16px 36px rgb(21 45 36 / 22%);
+   display: grid;
+   grid-template-rows: auto minmax(0, 1fr) auto;
+   max-height: calc(100dvh - 24px);
+   max-width: 430px;
+   overflow: hidden;
+   width: 100%;
+}
+
+.diagnostics-header {
+   align-items: center;
+   border-bottom: 1px solid #d7e0dc;
+   display: flex;
+   justify-content: space-between;
+   min-height: 48px;
+   padding: 5px 7px 5px 13px;
+}
+
+.diagnostics-header h2 {
+   font-size: 1rem;
+   line-height: 1.25;
+   margin: 0;
+}
+
+.diagnostics-close {
+   height: 38px;
+   min-height: 38px;
+   min-width: 38px;
+   width: 38px;
+}
+
+.diagnostics-content {
+   min-height: 88px;
+   overflow: auto;
+   overscroll-behavior: contain;
+   padding: 10px 13px;
+}
+
+.diagnostics-content > p {
+   color: #50635a;
+   font-size: 0.8rem;
+   margin: 0;
+}
+
+.diagnostics-error {
+   color: #a4382b !important;
+}
+
+.diagnostics-list {
+   display: grid;
+   gap: 0;
+   margin: 0;
+}
+
+.diagnostics-list > div {
+   align-items: start;
+   border-bottom: 1px solid #e0e7e3;
+   display: grid;
+   gap: 8px;
+   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+   padding: 6px 0;
+}
+
+.diagnostics-list > div:last-child {
+   border-bottom: 0;
+}
+
+.diagnostics-list dt,
+.diagnostics-list dd {
+   font-size: 0.72rem;
+   line-height: 1.25;
+   margin: 0;
+   overflow-wrap: anywhere;
+}
+
+.diagnostics-list dt {
+   color: #5f7169;
+   font-weight: 700;
+}
+
+.diagnostics-list dd {
+   color: #1c2c26;
+   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+   text-align: right;
+}
+
+.diagnostics-actions {
+   border-top: 1px solid #d7e0dc;
+   display: grid;
+   gap: 6px;
+   padding: 8px;
+}
+
+.diagnostics-action {
+   align-items: center;
+   background: #ffffff;
+   border: 1px solid #c9d7d0;
+   border-radius: 7px;
+   color: #20342d;
+   display: flex;
+   font-size: 0.76rem;
+   font-weight: 780;
+   gap: 7px;
+   justify-content: center;
+   min-height: 42px;
+   padding: 0 9px;
+}
+
+.diagnostics-action:hover:not(:disabled) {
+   background: #e9f1ed;
+}
+
+.diagnostics-action:disabled,
+.room-selected-remove:disabled {
+   cursor: default;
+   opacity: 0.48;
+}
+
+.icon-button:focus-visible,
+.room-file-picker:focus-within,
+.room-primary-action:focus-visible,
+.room-download-all:focus-visible,
+.diagnostics-action:focus-visible {
+   outline: 3px solid rgb(228 164 40 / 52%);
+   outline-offset: 2px;
+}
+
+.room-mobile .icon-button,
+.room-mobile .room-action-button {
+   height: 44px;
+   min-height: 44px;
+   min-width: 44px;
+   width: 44px;
+}
+
+@media (min-width: 520px) {
+   .diagnostics-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+   *,
+   *::before,
+   *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+   }
+}

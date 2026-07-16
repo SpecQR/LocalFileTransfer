@@ -1,0 +1,143 @@
+{
+   "schemaVersion": 1,
+   "generatedAt": "2026-07-15T16:11:23.633Z",
+   "version": "2.0.0-rc.2",
+   "reports": [
+      {
+         "requestedScale": 1,
+         "screenshot": "desktop-100.png",
+         "screenshotPixels": {
+            "width": 300,
+            "height": 374
+         },
+         "sharedTextScreenshot": "desktop-100-shared-text.png",
+         "sharedTextScreenshotPixels": {
+            "width": 300,
+            "height": 374
+         },
+         "sharedTextMetrics": {
+            "panelLeft": 10,
+            "panelTop": 26.5,
+            "panelRight": 290,
+            "panelBottom": 347.5,
+            "textareaWidth": 256,
+            "textareaHeight": 176,
+            "viewportWidth": 300,
+            "viewportHeight": 374
+         },
+         "contentSize": [
+            300,
+            374
+         ],
+         "devicePixelRatio": 1,
+         "documentClientWidth": 300,
+         "documentScrollWidth": 300,
+         "documentClientHeight": 374,
+         "documentScrollHeight": 374,
+         "qrWidth": 276,
+         "qrHeight": 276
+      },
+      {
+         "requestedScale": 1.25,
+         "screenshot": "desktop-125.png",
+         "screenshotPixels": {
+            "width": 375,
+            "height": 469
+         },
+         "sharedTextScreenshot": "desktop-125-shared-text.png",
+         "sharedTextScreenshotPixels": {
+            "width": 375,
+            "height": 469
+         },
+         "sharedTextMetrics": {
+            "panelLeft": 10,
+            "panelTop": 27.399999618530273,
+            "panelRight": 290,
+            "panelBottom": 347.79999351501465,
+            "textareaWidth": 256.3999938964844,
+            "textareaHeight": 176,
+            "viewportWidth": 300,
+            "viewportHeight": 375
+         },
+         "contentSize": [
+            300,
+            375
+         ],
+         "devicePixelRatio": 1.25,
+         "documentClientWidth": 300,
+         "documentScrollWidth": 300,
+         "documentClientHeight": 375,
+         "documentScrollHeight": 375,
+         "qrWidth": 276,
+         "qrHeight": 276
+      },
+      {
+         "requestedScale": 1.5,
+         "screenshot": "desktop-150.png",
+         "screenshotPixels": {
+            "width": 450,
+            "height": 564
+         },
+         "sharedTextScreenshot": "desktop-150-shared-text.png",
+         "sharedTextScreenshotPixels": {
+            "width": 450,
+            "height": 564
+         },
+         "sharedTextMetrics": {
+            "panelLeft": 10,
+            "panelTop": 28,
+            "panelRight": 290,
+            "panelBottom": 348,
+            "textareaWidth": 256.66668701171875,
+            "textareaHeight": 176,
+            "viewportWidth": 300,
+            "viewportHeight": 376
+         },
+         "contentSize": [
+            300,
+            376
+         ],
+         "devicePixelRatio": 1.5,
+         "documentClientWidth": 300,
+         "documentScrollWidth": 300,
+         "documentClientHeight": 376,
+         "documentScrollHeight": 376,
+         "qrWidth": 276,
+         "qrHeight": 276
+      },
+      {
+         "requestedScale": 2,
+         "screenshot": "desktop-200.png",
+         "screenshotPixels": {
+            "width": 600,
+            "height": 750
+         },
+         "sharedTextScreenshot": "desktop-200-shared-text.png",
+         "sharedTextScreenshotPixels": {
+            "width": 600,
+            "height": 750
+         },
+         "sharedTextMetrics": {
+            "panelLeft": 10,
+            "panelTop": 27,
+            "panelRight": 290,
+            "panelBottom": 348,
+            "textareaWidth": 256,
+            "textareaHeight": 176,
+            "viewportWidth": 300,
+            "viewportHeight": 375
+         },
+         "contentSize": [
+            300,
+            375
+         ],
+         "devicePixelRatio": 2,
+         "documentClientWidth": 300,
+         "documentScrollWidth": 300,
+         "documentClientHeight": 375,
+         "documentScrollHeight": 375,
+         "qrWidth": 276,
+         "qrHeight": 276
+      }
+   ]
+}

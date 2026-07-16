@@ -1,0 +1,512 @@
+# Third-party license inventory（第三者ライセンス一覧）
+
+Local File Transfer 2.0.0-rc.2
+
+Pinned package lock と installed package の license metadata から生成した一覧です。
+
+## (MIT OR CC0-1.0)
+
+- type-fest@0.13.1: license (SHA-256 64a93ffc0a06a2266dbb57ed7ebe3b56ba66ab337b6347fabdbf86c76819fbae)
+
+## (WTFPL OR MIT)
+
+- utf8-byte-length@1.0.5: LICENSE.MIT.txt (SHA-256 bfefe6b48c92732f278120d7a3bf682c3b01e25fdc2e0327544cbb62a2fa9a8e), LICENSE.WTFPL.txt (SHA-256 184d8dd2923c05139a55da1ff61a367e45ca596ac4fb96a26856c3c90003c4bb)
+
+## Apache-2.0
+
+- @malept/cross-spawn-promise@2.0.0: LICENSE (SHA-256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30)
+- @playwright/test@1.61.1: LICENSE (SHA-256 45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb), NOTICE (SHA-256 6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d)
+- baseline-browser-mapping@2.10.43: LICENSE.txt (SHA-256 c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4)
+- ejs@3.1.10: LICENSE (SHA-256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30)
+- exponential-backoff@3.1.3: LICENSE (SHA-256 f5afc95c69e116ea6b1755f91a8763f53eadb78b4f1582a08d2d18586a03a117)
+- filelist@1.0.6: installed package 内に license file が見つかりません
+- jake@10.9.4: installed package 内に license file が見つかりません
+- playwright@1.61.1: LICENSE (SHA-256 45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb), NOTICE (SHA-256 6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d)
+- playwright-core@1.61.1: LICENSE (SHA-256 45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb), NOTICE (SHA-256 6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d)
+- sumchecker@3.0.1: LICENSE (SHA-256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30)
+- typescript@5.9.3: LICENSE.txt (SHA-256 a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47)
+- typescript@6.0.3: LICENSE.txt (SHA-256 a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47)
+
+## BlueOak-1.0.0
+
+- chownr@3.0.0: LICENSE.md (SHA-256 a49c9ba464796f65b59fca3f1e6ca40912df1e859f575383223f7ec6c5baae09)
+- isexe@3.1.5: LICENSE.md (SHA-256 8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004)
+- isexe@4.0.0: LICENSE.md (SHA-256 8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004)
+- minimatch@10.2.5: LICENSE.md (SHA-256 2c7c5d22ed5a8ee968c64757710979afcd77438c48b4a265b94e615babd8a901)
+- minipass@7.1.3: LICENSE.md (SHA-256 8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004)
+- sax@1.6.0: LICENSE.md (SHA-256 8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004)
+- tar@7.5.20: LICENSE.md (SHA-256 8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004)
+- yallist@5.0.0: LICENSE.md (SHA-256 a49c9ba464796f65b59fca3f1e6ca40912df1e859f575383223f7ec6c5baae09)
+
+## BSD-2-Clause
+
+- @electron-internal/extract-zip@1.0.4: installed package 内に license file が見つかりません
+- @electron/osx-sign@1.3.3: LICENSE (SHA-256 fe6ac932d2a16058886ab32ce601b50ce2b9d65925305b72227a184185552535)
+- @electron/windows-sign@1.2.2: LICENSE (SHA-256 77cbd788d921cacb2eb6b35c96a37f6752a05c69884387a4e9b1588bacec8e4a)
+- dotenv@16.6.1: LICENSE (SHA-256 74b629b24865e1e83c5277ee84590b7937644d6fd959d0c7bdce758676cd2ced)
+- dotenv-expand@11.0.7: LICENSE (SHA-256 3726b9470c3a6b54e1ebcc1d802d37089b5a5fc97273b52b2cee578a4421ec45)
+- http-cache-semantics@4.2.0: LICENSE (SHA-256 ab868ad5a2ef5068560d9cd3b2180ec63c140bb4c5cae1ba779d300a0ac74fa3)
+- uri-js@4.4.1: LICENSE (SHA-256 0af366eff4c01ec147c9c61ea9e8ffad64a4294754c9d79355f3fd1b97cb2fb9)
+
+## BSD-3-Clause
+
+- fast-uri@3.1.2: LICENSE (SHA-256 b010b0dfdfdb23d7396e03b82cd4621fc9bb8f95d6b0aea70b9c24e12074c786)
+- global-agent@3.0.0: LICENSE (SHA-256 ba98e94118579117505f6f11fd9a4354c5e65ece03b4898d8b8f7785efcd25c1)
+- ieee754@1.2.1: installed package 内に license file が見つかりません
+- light-my-request@6.6.0: LICENSE (SHA-256 c59ffead4ccbc72ddc3258c23d608bc6f10cea5241038ca8d39cdd7d7e7667c9)
+- roarr@2.15.4: LICENSE (SHA-256 ba98e94118579117505f6f11fd9a4354c5e65ece03b4898d8b8f7785efcd25c1)
+- secure-json-parse@4.1.0: LICENSE (SHA-256 d490035c46547ddc88330bc0b42fcd89eabfd66435c4291352d1b9b68d62c729)
+- source-map@0.6.1: LICENSE (SHA-256 6cb0631f71c7749763fd3dd1d5bee52dd1070ec17f2edc1710079ad070bd2fbd)
+- source-map-js@1.2.1: LICENSE (SHA-256 6cb0631f71c7749763fd3dd1d5bee52dd1070ec17f2edc1710079ad070bd2fbd)
+- sprintf-js@1.1.3: LICENSE (SHA-256 f8287e4dd9480be58c56aca4a55c23b782c43a86e69aabad78fff4df0d29edef)
+
+## CC-BY-4.0
+
+- caniuse-lite@1.0.30001805: LICENSE (SHA-256 fd3a263fe19ed8faa9068b43abaebafc02c77897b0c6fc09abc04bb592e5f16e)
+
+## ISC
+
+- @isaacs/fs-minipass@4.0.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- abbrev@4.0.0: LICENSE (SHA-256 9e0d5c7989f7e9f07d7c4b158aceff270f235eb7464ace41c5e7b200834a43e0)
+- at-least-node@1.0.0: LICENSE (SHA-256 ecc042b5f1cdc6854fc00486065084bed877daa8a7fadce15ef943a550d1dff0)
+- cliui@8.0.1: LICENSE.txt (SHA-256 2dc0465729366c3a7890dfa9e972a1ba7048a26c02116fb8b419a6a1ac110149)
+- electron-to-chromium@1.5.389: LICENSE (SHA-256 25ba5c59dad3e0dd8f9540beaa0f0a86a10e3aec35af5fdc8e88c5f6a5c0d8c6)
+- fastq@1.20.1: LICENSE (SHA-256 c3367f6d01a79d368fc4fbb41b3615fcd92f243d6597ab96742f6f976f9325af)
+- fs.realpath@1.0.0: LICENSE (SHA-256 8465b04b67f473341171b5c9c8b2c741a4a395b3f6ed58339b3a4f4db3db7472)
+- get-caller-file@2.0.5: LICENSE.md (SHA-256 902dbb4154679fb2b8d7c33878183f45b268d01eae5e5033dddaa8852d45f213)
+- glob@7.2.3: LICENSE (SHA-256 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0)
+- graceful-fs@4.2.11: LICENSE (SHA-256 f65c5d9f22a317b2a10803bd1868461ce6499c2ed7217bc80c0cc772a748789c)
+- hosted-git-info@4.1.0: LICENSE (SHA-256 c1476ec53119cd4c8370f91f5152ac76312a29b4fae2d49b5e0e0970fe0fa5ee)
+- inflight@1.0.6: LICENSE (SHA-256 05dc4d785ac3a488676d3ed10e901b75ad89dafcc63f8e66610fd4a39cc5c7e8)
+- inherits@2.0.4: LICENSE (SHA-256 5ffe28e7ade7d8f10d85d5337a73fd793dac5c462fb9a28fbf8c5046c7fbca3b)
+- isexe@2.0.0: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- json-stringify-safe@5.0.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- lru-cache@5.1.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- lru-cache@6.0.0: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- lucide-react@0.468.0: LICENSE (SHA-256 1e7290b35280a048667bbf0ebabac1c7fd52a75300e8b2946ac165715997f2bc)
+- minimatch@3.1.5: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- minimatch@5.1.9: LICENSE (SHA-256 d11323827fa4edeaafc437cc5b91b6971b335f0127efeeb42bf5122fe8657e8f)
+- minimatch@9.0.9: LICENSE (SHA-256 d11323827fa4edeaafc437cc5b91b6971b335f0127efeeb42bf5122fe8657e8f)
+- nopt@9.0.0: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- once@1.4.0: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- picocolors@1.1.1: LICENSE (SHA-256 6582629e2979466878f6014313dcc2f3756c9616148682227ce3063dde310750)
+- proc-log@6.1.0: LICENSE (SHA-256 dc32a0dee275e0a9aeffbc974dbf4899a30dcdc2e5ffa8934aecb69261065864)
+- rimraf@2.6.3: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- semver@5.7.2: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- semver@6.3.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- semver@7.7.4: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- semver@7.8.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- signal-exit@3.0.7: LICENSE.txt (SHA-256 e05b1eaf5b5f99b7ad75cd1f38858ff9a311780b97715ead67936d60bf96aa7e)
+- split2@4.2.0: LICENSE (SHA-256 c372ef2fa1dfcb124ed807609751e75e3a009f108c5724916b489288fcb88a0c)
+- which@2.0.2: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- which@5.0.0: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- which@6.0.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- wrappy@1.0.2: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- y18n@5.0.8: LICENSE (SHA-256 2034cce3b6fafcddd642c4175e01d3ddfc332a53b9f20fdc46b1466dc89ac469)
+- yallist@3.1.1: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- yallist@4.0.0: LICENSE (SHA-256 4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b)
+- yargs-parser@21.1.1: LICENSE.txt (SHA-256 365496ca1f56da40b23c9815fc40fa9005847b2f8f8fd1c1a4929ef25ec8cd1d)
+
+## MIT
+
+- @babel/code-frame@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/compat-data@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/core@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/generator@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-compilation-targets@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-globals@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-module-imports@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-module-transforms@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-plugin-utils@7.28.6: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-string-parser@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-validator-identifier@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helper-validator-option@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/helpers@7.29.7: LICENSE (SHA-256 4be9d87b56a306293223b490c0d0b245e9e94f39884147bf051a6c7b825aeb30)
+- @babel/parser@7.29.7: LICENSE (SHA-256 2e97627cb278aa7556fb9e8817368302301a595b6c7582512b8d74c57b773652)
+- @babel/plugin-transform-react-jsx-self@7.27.1: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/plugin-transform-react-jsx-source@7.27.1: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/template@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/traverse@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @babel/types@7.29.7: LICENSE (SHA-256 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76)
+- @develar/schema-utils@2.6.5: LICENSE (SHA-256 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e)
+- @electron/asar@3.4.1: LICENSE.md (SHA-256 d5af8fc171f6f600c0ab4e7597dca398dda80dbe6821ce01cef78e859e7a00f8)
+- @electron/fuses@1.8.0: LICENSE (SHA-256 24e49a190cf97a2127e0588981e82ff6e4357632278c9ab510f328a2689eca53)
+- @electron/fuses@2.1.3: LICENSE (SHA-256 24e49a190cf97a2127e0588981e82ff6e4357632278c9ab510f328a2689eca53)
+- @electron/get@3.1.0: LICENSE (SHA-256 edab8abb78d9c5b36944c3e00aebf6a90eb32378993f49ac8a3904007029c629)
+- @electron/get@5.0.0: LICENSE (SHA-256 edab8abb78d9c5b36944c3e00aebf6a90eb32378993f49ac8a3904007029c629)
+- @electron/notarize@2.5.0: LICENSE (SHA-256 60e42db5f32611ac978f4be323cba0511d1375a1af10f32d2a8bba9b291d9de2)
+- @electron/rebuild@4.0.4: LICENSE (SHA-256 edab8abb78d9c5b36944c3e00aebf6a90eb32378993f49ac8a3904007029c629)
+- @electron/universal@2.0.3: LICENSE (SHA-256 edab8abb78d9c5b36944c3e00aebf6a90eb32378993f49ac8a3904007029c629)
+- @esbuild/aix-ppc64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/aix-ppc64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/android-arm@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/android-arm@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/android-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/android-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/android-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/android-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/darwin-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/darwin-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/darwin-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/darwin-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/freebsd-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/freebsd-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/freebsd-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/freebsd-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-arm@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-arm@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-ia32@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-ia32@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-loong64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-loong64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-mips64el@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-mips64el@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-ppc64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-ppc64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-riscv64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-riscv64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-s390x@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-s390x@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/linux-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/linux-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/netbsd-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/netbsd-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/netbsd-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/netbsd-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/openbsd-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/openbsd-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/openbsd-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/openbsd-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/openharmony-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/openharmony-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/sunos-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/sunos-x64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/win32-arm64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/win32-arm64@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/win32-ia32@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/win32-ia32@0.28.1: installed package 内に license file が見つかりません
+- @esbuild/win32-x64@0.25.12: installed package 内に license file が見つかりません
+- @esbuild/win32-x64@0.28.1: installed package 内に license file が見つかりません
+- @fastify/ajv-compiler@4.0.5: LICENSE (SHA-256 9107d3439217d1dc2db08b738d2da931cd8d911049ec187de50657df7ae69927)
+- @fastify/error@4.2.0: LICENSE (SHA-256 ec99456b6f97f7e559790df166a17a2418dbdbf595d63502792a5ce661f1346c)
+- @fastify/fast-json-stringify-compiler@5.0.3: LICENSE (SHA-256 beaaa6163b3107bec675c3149e71cc818ffa5a6470f4ccca4326568619f18596)
+- @fastify/forwarded@3.0.1: LICENSE (SHA-256 d68a3fa8f9d630e745cbdc7398691467fc11b2d4fe466f68692402461cf67781)
+- @fastify/merge-json-schemas@0.2.1: LICENSE (SHA-256 a5b84e79d71db5b8baef48e7c04143ca70117ee0a0b637133c02ab63a79fa6c7)
+- @fastify/proxy-addr@5.1.0: LICENSE (SHA-256 2b78f11c8624f013751e54a34d87e8b5be5dd525dff65c7cda86f5439ed8bf8e)
+- @jridgewell/gen-mapping@0.3.13: LICENSE (SHA-256 769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c)
+- @jridgewell/remapping@2.3.5: LICENSE (SHA-256 769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c)
+- @jridgewell/resolve-uri@3.1.2: LICENSE (SHA-256 b8778b155bfde5a28b023a558753c0fa058a52bb9de35c343c250be1bbcdedab)
+- @jridgewell/sourcemap-codec@1.5.5: LICENSE (SHA-256 769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c)
+- @jridgewell/trace-mapping@0.3.31: LICENSE (SHA-256 769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c)
+- @malept/flatpak-bundler@0.4.0: LICENSE (SHA-256 503b8b4d83781a017ffee6b4ec40d7d8da68be5f898004bfeb4ef4a7cb52ef23)
+- @noble/hashes@2.2.0: LICENSE (SHA-256 4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec)
+- @pinojs/redact@0.4.0: LICENSE (SHA-256 58d4023bfbed5fb530c5bb8d44641299eac62c850267415ec939cc42dea87e4f)
+- @rolldown/pluginutils@1.0.0-beta.27: LICENSE (SHA-256 23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734)
+- @rollup/rollup-android-arm-eabi@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-android-arm64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-darwin-arm64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-darwin-x64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-freebsd-arm64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-freebsd-x64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-arm-gnueabihf@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-arm-musleabihf@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-arm64-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-arm64-musl@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-loong64-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-loong64-musl@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-ppc64-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-ppc64-musl@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-riscv64-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-riscv64-musl@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-s390x-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-x64-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-linux-x64-musl@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-openbsd-x64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-openharmony-arm64@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-win32-arm64-msvc@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-win32-ia32-msvc@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-win32-x64-gnu@4.60.4: installed package 内に license file が見つかりません
+- @rollup/rollup-win32-x64-msvc@4.60.4: installed package 内に license file が見つかりません
+- @sindresorhus/is@4.6.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- @szmarczak/http-timer@4.0.6: LICENSE (SHA-256 0194571d45a06ea2a22ceb51f981e3be92525966d28847dbc0d9982603bf90de)
+- @types/babel__core@7.20.5: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/babel__generator@7.27.0: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/babel__template@7.4.4: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/babel__traverse@7.28.0: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/cacheable-request@6.0.3: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/debug@4.1.13: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/estree@1.0.8: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/fs-extra@9.0.13: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/http-cache-semantics@4.2.0: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/keyv@3.1.4: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/ms@2.1.0: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/node@22.19.19: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/node@24.12.4: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/node@25.9.1: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/plist@3.0.5: installed package 内に license file が見つかりません
+- @types/prop-types@15.7.15: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/react@18.3.29: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/react-dom@18.3.7: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/responselike@1.0.3: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/verror@1.10.11: installed package 内に license file が見つかりません
+- @types/yauzl@3.4.0: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @types/yazl@3.3.1: LICENSE (SHA-256 c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383)
+- @vitejs/plugin-react@4.7.0: LICENSE (SHA-256 29b68325fe026047d13e187b44c33b2acacf7dc647dec4583702e59f235e13b5)
+- @xmldom/xmldom@0.8.13: LICENSE (SHA-256 4da724fc305d81606b245b324d4d2586916b9d248b23d82183df753ace0fdf71)
+- 7zip-bin@5.2.0: LICENSE.txt (SHA-256 e9f2248a07935f444c613d84e5a0239eab7537a80cc02212f386662f0ded0e11)
+- abstract-logging@2.0.1: installed package 内に license file が見つかりません
+- agent-base@7.1.4: LICENSE (SHA-256 8d8c55319c7729d57be811c747452636688d54f19701ee0752b6b15ad3771d9a)
+- ajv@6.15.0: LICENSE (SHA-256 e85e131fa4ed25538ff1f4962ced1fb6f68b079bd9164a790597a0f30b8fd030)
+- ajv@8.20.0: LICENSE (SHA-256 a05350a88e318e4f5f2c2a1ff1e2e88daa4dd38e6e78b71cccae422bdc762cc3)
+- ajv-formats@3.0.1: LICENSE (SHA-256 9df3bb69929a3b650ed73b3bfa1756725aaff0ac296461605753547004eafeaf)
+- ajv-keywords@3.5.2: LICENSE (SHA-256 a25dce9c94c3ad622574cffbefd4b8845b418aa65df966d97e3204ad276ed240)
+- ansi-regex@5.0.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- ansi-styles@4.3.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- app-builder-bin@5.0.0-alpha.12: LICENSE (SHA-256 bd662a6ff7b68e2d89e92ab5d02c0ff04eef249b8a02fc424cf970fb3feb525f)
+- app-builder-lib@26.8.1: installed package 内に license file が見つかりません
+- assert-plus@1.0.0: installed package 内に license file が見つかりません
+- astral-regex@2.0.0: installed package 内に license file が見つかりません
+- async@3.2.6: LICENSE (SHA-256 d9fed24f132985934fca621c4dc1dfb53e03377a24d0568d424383d7eaa9c0ac)
+- async-exit-hook@2.0.1: license (SHA-256 6fb9754611c20f6649f68805e8c990e83261f29316e29de9e6cedae607b8634c)
+- asynckit@0.4.0: LICENSE (SHA-256 1953150d5d4b10c7542cee6f6e0c613b2682545233f069d75cfff1936386ce10)
+- atomic-sleep@1.0.0: LICENSE (SHA-256 8d58741278b289a7f4b6dde2d6273fca7711b9849452c477933d1cccd03db1e7)
+- avvio@9.2.0: LICENSE (SHA-256 af2dd164640b8bf4ee95b3f10dc33cde95df232c0fccd853f6e4a029b7d0dae4)
+- balanced-match@1.0.2: LICENSE.md (SHA-256 a1bd5deadb6a06dd74efa852c1b8b23f63b67f2214fbe9c8bd591da51da69268)
+- balanced-match@4.0.4: LICENSE.md (SHA-256 d408f38ffa3355c5faec517153295338892eb0f1ea43f57874bb23c6075979b5)
+- base64-js@1.5.1: LICENSE (SHA-256 5b37224c080cdcc97c871ada971c224e9926370fe74f11b539aa1cf9f3b1aca1)
+- boolean@3.2.0: LICENSE.txt (SHA-256 8e4aa1aef825c37d6f74d4b867dccb7b059b66c75ecdedc74834e2f403568a27)
+- brace-expansion@1.1.14: LICENSE (SHA-256 68f12f6e2c33688699249c01d8f9623c534da20aa71989c57b061b7bc1676d14)
+- brace-expansion@2.1.0: LICENSE (SHA-256 68f12f6e2c33688699249c01d8f9623c534da20aa71989c57b061b7bc1676d14)
+- brace-expansion@5.0.6: LICENSE (SHA-256 9c63a23124d68cd30cd316a94a1a0bca34f032786df6df69fc4b5f136bac8d2e)
+- browserslist@4.28.6: LICENSE (SHA-256 21c2679a63d7699c0e644409e2f17d0adbc7a965003feb06b3ff4b833d21f722)
+- buffer@5.7.1: installed package 内に license file が見つかりません
+- buffer-crc32@1.0.0: LICENSE (SHA-256 ddc9158fa20e427bc12fa8e1e6d07c642ed4d2c618607df768b30ae2986b3b7c)
+- buffer-from@1.1.2: LICENSE (SHA-256 14275f5c8139d02054c5259d52a88ccbba662a86af18c30f071c8d082dc6004c)
+- builder-util@26.8.1: LICENSE (SHA-256 bed8d0ab3e6031817f775a641ff37313b0f5591bc8ba0ed79b978dafbd4231ce)
+- builder-util-runtime@9.5.1: LICENSE (SHA-256 bed8d0ab3e6031817f775a641ff37313b0f5591bc8ba0ed79b978dafbd4231ce)
+- cacheable-lookup@5.0.4: LICENSE (SHA-256 b35de79efc88b23c73dd431df6075bed0890db0db1544ee3d57b046aa7a8e72b)
+- cacheable-request@7.0.4: LICENSE (SHA-256 861908ec818ff6142fdd6c4b66d6264c206d3d5a46003b1342e1853a9a85abac)
+- call-bind-apply-helpers@1.0.2: LICENSE (SHA-256 5e325595b4ea8cfec3802f545b1def5d7b73e4a5b8e9ba63e32a320f67732292)
+- chalk@4.1.2: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- chromium-pickle-js@0.2.0: installed package 内に license file が見つかりません
+- ci-info@4.3.1: LICENSE (SHA-256 f58943cb354fb2707fea2f7b26b04e6014ddb56835cdfd414c9d2c6c59165b64)
+- ci-info@4.4.0: LICENSE (SHA-256 f58943cb354fb2707fea2f7b26b04e6014ddb56835cdfd414c9d2c6c59165b64)
+- cli-truncate@2.1.0: installed package 内に license file が見つかりません
+- clone-response@1.0.3: LICENSE (SHA-256 861908ec818ff6142fdd6c4b66d6264c206d3d5a46003b1342e1853a9a85abac)
+- color-convert@2.0.1: LICENSE (SHA-256 693866fc419c6f61c8570438ec00659d156ec2b4d4a4d04091711f5f11a365d4)
+- color-name@1.1.4: LICENSE (SHA-256 c064f7a3e353bc1bc977f3c897941c75ef763f44f41677e0a15370ca0853d6e2)
+- combined-stream@1.0.8: License (SHA-256 47eb8ca82c798246774946d1be0f9aa08f025fa8325ced0947aeeb4c05fe5547)
+- commander@5.1.0: LICENSE (SHA-256 04512a63dce4d2d506ad612dc0bd7681ccf6e3655f7b6eaef7dfac8323d1ec0b)
+- commander@9.5.0: LICENSE (SHA-256 04512a63dce4d2d506ad612dc0bd7681ccf6e3655f7b6eaef7dfac8323d1ec0b)
+- compare-version@0.1.2: installed package 内に license file が見つかりません
+- concat-map@0.0.1: LICENSE (SHA-256 435a6722c786b0a56fbe7387028f1d9d3f3a2d0fb615bb8fee118727c3f59b7b)
+- convert-source-map@2.0.0: LICENSE (SHA-256 1fa6ee8bb95a81ae3d73a5bd074a3ac380ffec13697051063ca1a601921b91db)
+- cookie@1.1.1: LICENSE (SHA-256 c02110eedc16c7114f1a9bdc026c65626ce1d9c7e27fd51a8e0feee8a48a6858)
+- core-util-is@1.0.2: installed package 内に license file が見つかりません
+- crc@3.8.0: installed package 内に license file が見つかりません
+- cross-dirname@0.1.0: installed package 内に license file が見つかりません
+- cross-spawn@7.0.6: LICENSE (SHA-256 aaa78451b6fecd1b9c4594c796c133c0e90cad100372ff8bc6de615e9ef9adf1)
+- csstype@3.2.3: LICENSE (SHA-256 11d55bd4541c75ee7879547ac49089c489163dae49551389713c3d026cab383e)
+- debug@4.4.3: LICENSE (SHA-256 3a61c6c96caf5c1d9b623fb9b04c822b783dfcb78aa7e49c76a3f643e6ed7f95)
+- decompress-response@6.0.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- defer-to-connect@2.0.1: LICENSE (SHA-256 0194571d45a06ea2a22ceb51f981e3be92525966d28847dbc0d9982603bf90de)
+- define-data-property@1.1.4: LICENSE (SHA-256 b41d08bc3624d8c436fc80237d73ebb361985a67f4504bbcd703e5ca2b27254c)
+- define-properties@1.2.1: LICENSE (SHA-256 00d402c2bbe7c67369bd01ce2c16b8ed46ccc949a1ee2d6bb8f9606afa8c7434)
+- delayed-stream@1.0.0: License (SHA-256 47eb8ca82c798246774946d1be0f9aa08f025fa8325ced0947aeeb4c05fe5547)
+- dequal@2.0.3: license (SHA-256 306fa513e39b23a6e8747520de761809d206b99800ef41907b530226574c59ae)
+- detect-node@2.1.0: LICENSE (SHA-256 54b32293ea560d22cd9b62af9b2cda1a030d910a48c6601d227c5ff2338d95f8)
+- dir-compare@4.2.0: LICENSE (SHA-256 4b5d70dad6961c6f676e8a1dbd408e4869c1996dff9fc7d7d49c04916c60751f)
+- dmg-builder@26.8.1: installed package 内に license file が見つかりません
+- dmg-license@1.0.11: installed package 内に license file が見つかりません
+- dunder-proto@1.0.1: LICENSE (SHA-256 2b770a704c15de238c3f622b01b0044ddd60b49ee30608ea6991ebf19db7a7a1)
+- electron@43.0.0: LICENSE (SHA-256 5154e165bd6c2cc0cfbcd8916498c7abab0497923bafcd5cb07673fe8480087d)
+- electron-builder@26.8.1: LICENSE (SHA-256 bed8d0ab3e6031817f775a641ff37313b0f5591bc8ba0ed79b978dafbd4231ce)
+- electron-builder-squirrel-windows@26.8.1: LICENSE (SHA-256 bed8d0ab3e6031817f775a641ff37313b0f5591bc8ba0ed79b978dafbd4231ce)
+- electron-publish@26.8.1: LICENSE (SHA-256 bed8d0ab3e6031817f775a641ff37313b0f5591bc8ba0ed79b978dafbd4231ce)
+- electron-winstaller@5.4.0: LICENSE (SHA-256 379ecb81d11a2c2a72225e0cf8cd04803b220da64e1668042ddd0d04bd1c8666)
+- emoji-regex@8.0.0: installed package 内に license file が見つかりません
+- end-of-stream@1.4.5: LICENSE (SHA-256 3fe8d55a98dbf260eace67c00cf9bc53edb46234e840098a0b93df3096b97fb6)
+- env-paths@2.2.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- env-paths@3.0.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- err-code@2.0.3: installed package 内に license file が見つかりません
+- es-define-property@1.0.1: LICENSE (SHA-256 5e325595b4ea8cfec3802f545b1def5d7b73e4a5b8e9ba63e32a320f67732292)
+- es-errors@1.3.0: LICENSE (SHA-256 5e325595b4ea8cfec3802f545b1def5d7b73e4a5b8e9ba63e32a320f67732292)
+- es-object-atoms@1.1.2: LICENSE (SHA-256 5e325595b4ea8cfec3802f545b1def5d7b73e4a5b8e9ba63e32a320f67732292)
+- es-set-tostringtag@2.1.0: LICENSE (SHA-256 1a3aeb1f1398bd697d57c3c585faadf59d825aca6e3162cd7eeb72ff76eb2466)
+- es6-error@4.1.1: LICENSE.md (SHA-256 9f655c5baa5a6f254d1e87f27e14d04acaff4bd0b489ea3c2f33723919da2f44)
+- esbuild@0.25.12: LICENSE.md (SHA-256 b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681)
+- esbuild@0.28.1: LICENSE.md (SHA-256 b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681)
+- escalade@3.2.0: license (SHA-256 9a9edad7baae52622bddf3c15b2ef8a33d2c89f2d25408ad13e8a7481c6b0c97)
+- escape-string-regexp@4.0.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- extsprintf@1.4.1: installed package 内に license file が見つかりません
+- fast-decode-uri-component@1.0.1: LICENSE (SHA-256 27384b39baee4b476fb876670a75f282286fa55658bf0db14639621dd3801c9a)
+- fast-deep-equal@3.1.3: LICENSE (SHA-256 7bf9b2de73a6b356761c948d0e9eeb4be6c1270bd04c79cd489c1e400ffdfc1a)
+- fast-json-stable-stringify@2.1.0: LICENSE (SHA-256 a833d366242c298cf1b10263516572fb8dcbe68eb5072cdcac2b4546e2b4eb36)
+- fast-json-stringify@6.4.0: LICENSE (SHA-256 b08de5bb7b21f44a8358edf74febe50c75ef2a1e5470e06c8919eb934cba067c)
+- fast-querystring@1.1.2: LICENSE (SHA-256 4f8cf48502224399442f7eadd8620d96ef18125f9beb4949c53084ab3b05a4d4)
+- fastify@5.8.5: LICENSE (SHA-256 23c91863859171455a536380991b4160fee4e19e2d8dc353ecf7143cc4e53ca2)
+- fdir@6.5.0: LICENSE (SHA-256 9a39f2aadab11a3697edd668ff2d8ad885b649737b7ab4d3bf12b34e5ada0c86)
+- find-my-way@9.6.0: LICENSE (SHA-256 693f9539655acc1847add1ccd364312ba570bf8ce84706b6059e7e0b5ceb90e6)
+- form-data@4.0.6: License (SHA-256 e5b780d4f38d1d3328e3e53186c4e62d3fa149ea6f2bacd5de5ad0c30ac85343)
+- fs-extra@10.1.0: LICENSE (SHA-256 1e76029602ae9b21cc4e612db2496d92febed882ba13ba745f8b3309e85f9d39)
+- fs-extra@11.3.5: LICENSE (SHA-256 c6a7de1428955aa5a692f4d3a3d3ede658d959616944713337cda296736442e1)
+- fs-extra@7.0.1: LICENSE (SHA-256 1e76029602ae9b21cc4e612db2496d92febed882ba13ba745f8b3309e85f9d39)
+- fs-extra@8.1.0: LICENSE (SHA-256 1e76029602ae9b21cc4e612db2496d92febed882ba13ba745f8b3309e85f9d39)
+- fs-extra@9.1.0: LICENSE (SHA-256 1e76029602ae9b21cc4e612db2496d92febed882ba13ba745f8b3309e85f9d39)
+- fsevents@2.3.2: installed package 内に license file が見つかりません
+- fsevents@2.3.3: installed package 内に license file が見つかりません
+- function-bind@1.1.2: LICENSE (SHA-256 773e131a7684726005a7e4688a80b4620033bc08499bc1404dd1a1eb3bca725e)
+- gensync@1.0.0-beta.2: LICENSE (SHA-256 e3a956681ee067f971ac413994171b3d90ca801ec6324e76c9c55366cfe31cb0)
+- get-intrinsic@1.3.0: LICENSE (SHA-256 39c5ec504cf6bd5cd782a7c695828e09189df79f5d94840e4f08feb97b9fd416)
+- get-proto@1.0.1: LICENSE (SHA-256 be46ce1e3b0479af9ce82d22b465a6d7d2ff084fca0aaf3d54172da2b5eb5781)
+- get-stream@5.2.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- globalthis@1.0.4: LICENSE (SHA-256 acfaf437865d82f0fa9b9cdcae8b550bed8d011adaa5b42d973191caf99f62a8)
+- gopd@1.2.0: LICENSE (SHA-256 d90bf0a089da4cf43d644ed240a0b3825dcdb705e64e38371d56995a4cc9e4c5)
+- got@11.8.6: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- has-flag@4.0.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- has-property-descriptors@1.0.2: LICENSE (SHA-256 0f0ca96f50793990031ebc488a38f7292ff70bce8ab6a8e5eeda674abc32ccdf)
+- has-symbols@1.1.0: LICENSE (SHA-256 206c1adcf206dc0031b11232f5b054ec5f1662407ab1ca415247921cab2068ab)
+- has-tostringtag@1.0.2: LICENSE (SHA-256 e2560e002e13281578c75c850061d9255c33d16d732939e8c2db64c2506642fa)
+- hasown@2.0.4: LICENSE (SHA-256 bf9b0d665be2a689851eea667ca9f42066ea1d903b38349c51e6a44b2577680a)
+- http-proxy-agent@7.0.2: LICENSE (SHA-256 71368fd0f5b4129191e9afcd1e1ef2dc89a9090d3e4d80bbab92dafd032b3bef)
+- http2-wrapper@1.0.3: LICENSE (SHA-256 0194571d45a06ea2a22ceb51f981e3be92525966d28847dbc0d9982603bf90de)
+- https-proxy-agent@7.0.6: LICENSE (SHA-256 8d8c55319c7729d57be811c747452636688d54f19701ee0752b6b15ad3771d9a)
+- iconv-corefoundation@1.1.7: installed package 内に license file が見つかりません
+- iconv-lite@0.6.3: LICENSE (SHA-256 ac779f7314c74f232ef847ea86e714abe25cf6eeb5cc97b69451b74e2af6492d)
+- ipaddr.js@2.4.0: LICENSE (SHA-256 62568a2d1337b77171ecca9db10579163446de1ba6151678e81f06cdc199971b)
+- is-fullwidth-code-point@3.0.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- isbinaryfile@4.0.10: LICENSE.txt (SHA-256 2eedc70f2242aaf269e86e2c85eabeb875dc524d187d5953016b24091d26a843)
+- isbinaryfile@5.0.7: LICENSE.txt (SHA-256 2eedc70f2242aaf269e86e2c85eabeb875dc524d187d5953016b24091d26a843)
+- jiti@2.7.0: LICENSE (SHA-256 46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082)
+- js-tokens@4.0.0: LICENSE (SHA-256 2213d91c606205c71eb051a199478cdc2adde945893404d7f1421436dd6d5cc1)
+- js-yaml@4.3.0: LICENSE (SHA-256 a07bc24468b9654ce76a547d47a2db282d07733b715db4c73a98bd63961f9550)
+- jsesc@3.1.0: installed package 内に license file が見つかりません
+- json-buffer@3.0.1: LICENSE (SHA-256 715f1f0f2eb7688e53e4e958acdc7fc9e365ae3eaf26efc2604b93cc65fdc3f5)
+- json-schema-ref-resolver@3.0.0: LICENSE (SHA-256 0943b637252a9c6f1a062c77063aa58213ae93a18d5445f2fb77d1de7c60dc12)
+- json-schema-traverse@0.4.1: LICENSE (SHA-256 7bf9b2de73a6b356761c948d0e9eeb4be6c1270bd04c79cd489c1e400ffdfc1a)
+- json-schema-traverse@1.0.0: LICENSE (SHA-256 7bf9b2de73a6b356761c948d0e9eeb4be6c1270bd04c79cd489c1e400ffdfc1a)
+- json5@2.2.3: LICENSE.md (SHA-256 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927)
+- jsonfile@4.0.0: LICENSE (SHA-256 a9801fb52ba22ef808682a094da8a7a480584b7ed0dfd0d888ab543616335031)
+- jsonfile@6.2.1: LICENSE (SHA-256 a9801fb52ba22ef808682a094da8a7a480584b7ed0dfd0d888ab543616335031)
+- keyv@4.5.4: installed package 内に license file が見つかりません
+- lazy-val@1.0.5: installed package 内に license file が見つかりません
+- lodash@4.18.1: LICENSE (SHA-256 f71e8ed126b46346494aad5486874cd8f0aafe95092ed67d2e3cb6110f939abc)
+- loose-envify@1.4.0: LICENSE (SHA-256 4eb7543b08d955a6d23fcc224601d43ff566e775be918805e26210d7f6eb4893)
+- lowercase-keys@2.0.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- matcher@3.0.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- math-intrinsics@1.1.0: LICENSE (SHA-256 2b770a704c15de238c3f622b01b0044ddd60b49ee30608ea6991ebf19db7a7a1)
+- mime@2.6.0: LICENSE (SHA-256 8f2658c03422c408b2b2ce4d151decc3b1a6fd3d86e5ca9433777bccdcdf75a2)
+- mime-db@1.52.0: LICENSE (SHA-256 cc1dfd4dafa27271e8212cd3b274eeb3f262e40a6fdab36ddc3f9696f706f58b)
+- mime-types@2.1.35: LICENSE (SHA-256 71f83c4c0621102a56d9853812777b85751bce7e9726f686f5b056c1f8a4b0e6)
+- mimic-response@1.0.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- mimic-response@3.1.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- minimist@1.2.8: LICENSE (SHA-256 435a6722c786b0a56fbe7387028f1d9d3f3a2d0fb615bb8fee118727c3f59b7b)
+- minizlib@3.1.0: LICENSE (SHA-256 df05697a04b8997c79d423930534e59cc18828f6e22d0c8c2d62fcbea1c4f50b)
+- mkdirp@0.5.6: LICENSE (SHA-256 05991c2e8f070b69ec5b656c2c12fd07cd0153dd157d39b050b82af59b319a01)
+- ms@2.1.3: license.md (SHA-256 1662fae9b5314d11cf51284e2dcd1f006a354f7343f08712a730fcff9a359801)
+- nanoid@3.3.12: LICENSE (SHA-256 da4db1480d9beea3483a2eda5c53b22238d0827d57da162b48f122e04d2d9987)
+- node-abi@4.31.0: LICENSE (SHA-256 9a508cd4122f2dc1cc39f8ab0b6950efbc49fb087a581c7177a4b8c9d5d0d6a1)
+- node-addon-api@1.7.2: installed package 内に license file が見つかりません
+- node-api-version@0.2.1: installed package 内に license file が見つかりません
+- node-gyp@12.3.0: LICENSE (SHA-256 662a1b0115251cfb29c6aed0f221f8847bc49c6365d1c53a62c9f4bccc2489c3)
+- node-releases@2.0.51: LICENSE (SHA-256 3706296ed611888111ceccc1dff4712844dea4bde0b185c82d718c3b69895abe)
+- normalize-url@6.1.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- object-keys@1.1.1: LICENSE (SHA-256 5640e5cbe2e9f57f6ccfdd8dbfbeadb875495bdbcb69d2666ce3177ccd0942e4)
+- on-exit-leak-free@2.1.2: LICENSE (SHA-256 47404ffc18f1267832bc0623857871de5a3a93ebb19693f5e1b963af91fab54b)
+- p-cancelable@2.1.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- p-limit@3.1.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- path-is-absolute@1.0.1: license (SHA-256 6fb9754611c20f6649f68805e8c990e83261f29316e29de9e6cedae607b8634c)
+- path-key@3.1.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- pe-library@0.4.1: LICENSE (SHA-256 ad05317184b8cd78a770c1f55e386f600fd23feb88596c797ceb3ccd49f7d6bc)
+- pend@1.2.0: LICENSE (SHA-256 7e64acffcb0d20d33f5a86949ffd4a99ae045b10c7332a9c3a58635876c16880)
+- picomatch@4.0.4: LICENSE (SHA-256 d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9)
+- picomatch@4.0.5: LICENSE (SHA-256 d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9)
+- pino@9.14.0: LICENSE (SHA-256 d4eb00c3ef2fa54cdf05d167b15e994bc67226a7998e090e22a0bc8b16223a6c)
+- pino-abstract-transport@2.0.0: LICENSE (SHA-256 31f005ecff86a12a1351f4c2cb1133267c0b152546b08cd6fa4bdeb1943e00cd)
+- pino-std-serializers@7.1.0: LICENSE (SHA-256 6206673d24786f09656f7a480b7c50af289e9690963aaa135af5b626de5250df)
+- plist@3.1.0: LICENSE (SHA-256 3677dc86e6e5f119b500c308cc24cf533e2eb44c41050ea64584e049e5b70161)
+- postcss@8.5.15: LICENSE (SHA-256 5be1f3465bba68a626777f984878814aaf35e7ef8e9fd314d469bcf887050fb8)
+- postject@1.0.0-alpha.6: LICENSE (SHA-256 6546657539feb5b454f400db317e71fa39ff5cd048fa5d78ae0ada2df72f1ea7)
+- process-warning@4.0.1: LICENSE (SHA-256 d9726abc9eff9496f3ecb5302e70756f310db24a01c7ddd20f541143bf5576ad)
+- process-warning@5.0.0: LICENSE (SHA-256 d9726abc9eff9496f3ecb5302e70756f310db24a01c7ddd20f541143bf5576ad)
+- progress@2.0.3: LICENSE (SHA-256 d7d2a7786de7c7cfd96f920c6f12927d74e1d2a861ca4498bf465c3bc3f4c21c)
+- promise-retry@2.0.1: LICENSE (SHA-256 b1344bd78ebcbf8a359225ec444d038a653c6a5f9ecf405a50d4a5c11fbf27d1)
+- proper-lockfile@4.1.2: LICENSE (SHA-256 aaa78451b6fecd1b9c4594c796c133c0e90cad100372ff8bc6de615e9ef9adf1)
+- pump@3.0.4: LICENSE (SHA-256 3fe8d55a98dbf260eace67c00cf9bc53edb46234e840098a0b93df3096b97fb6)
+- punycode@2.3.1: installed package 内に license file が見つかりません
+- quick-format-unescaped@4.0.4: LICENSE (SHA-256 5ac141bfc70bec8f40838502436bfcb85e3f4c24377e41b9ddef07bdd6aa51bc)
+- quick-lru@5.1.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- react@18.3.1: LICENSE (SHA-256 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85)
+- react-dom@18.3.1: LICENSE (SHA-256 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85)
+- react-refresh@0.17.0: LICENSE (SHA-256 da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93)
+- read-binary-file-arch@1.0.6: installed package 内に license file が見つかりません
+- real-require@0.2.0: LICENSE.md (SHA-256 cbf263504e800cf09f99962cce8497b76eef79c3526bca434b90c3ef4c17220d)
+- require-directory@2.1.1: LICENSE (SHA-256 a92e52eb1fa7cd746e3827bf01d3a3589bbc8e1e51348b1da042aad165525ad1)
+- require-from-string@2.0.2: license (SHA-256 6ee0feb1f6ef996ff5a68600f8cf98909cf412d39ef3cdceaefd87d636fa1b7f)
+- resedit@1.7.2: LICENSE (SHA-256 ad05317184b8cd78a770c1f55e386f600fd23feb88596c797ceb3ccd49f7d6bc)
+- resolve-alpn@1.2.1: LICENSE (SHA-256 03b347a3d13b0e5bdb8fc5edeed0286b1be51441c6490a90710692d227136e0d)
+- responselike@2.0.1: LICENSE (SHA-256 2c4e066228dbca96c8c6e8bef5377306f227ffa1d87a18a218b230e13ac5d39e)
+- ret@0.5.0: LICENSE (SHA-256 bfc2c678db20d806b3787956f607a1509da5fca45b4d40a97c671cbee737159d)
+- retry@0.12.0: License (SHA-256 01ad164273e8e095abc9dbd1c21e194594a671af7d528cb43ee7b4c903ba7da3)
+- reusify@1.1.0: LICENSE (SHA-256 93a1506953b08ad4874e1cc0971a1d2ac387ca510da91e4d05e460a6c4966fa3)
+- rfdc@1.4.1: LICENSE (SHA-256 1ce941682a96c7b898ecd125d0f2e22319758ea6f3adbf498a65d649b0f3f7dd)
+- rollup@4.60.4: LICENSE.md (SHA-256 fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8)
+- safe-regex2@5.1.1: LICENSE (SHA-256 3871c31d0cc373951d836b8bb97275a2227f8af7464df7c51bc3f98769b87653)
+- safe-stable-stringify@2.5.0: LICENSE (SHA-256 3a6d6de49d284a36c5d271ef0e62eca1838cc460dd7630e3f2c347c8f5b2232a)
+- safer-buffer@2.1.2: LICENSE (SHA-256 4bc935e71be198c67ddf3c2b5fddb195f6edc182bfc155a96a6db61b44b494b9)
+- scheduler@0.23.2: LICENSE (SHA-256 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85)
+- semver-compare@1.0.0: LICENSE (SHA-256 435a6722c786b0a56fbe7387028f1d9d3f3a2d0fb615bb8fee118727c3f59b7b)
+- serialize-error@7.0.1: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- set-cookie-parser@2.7.2: LICENSE (SHA-256 c5c6c5183a789d122f267c405f685037efb87e27fcde28ab1dd7378a2d2f5962)
+- shebang-command@2.0.0: license (SHA-256 69dee148a2cc470554dfa7142e830662062394d0fe67cddd379aba90dc60d6b3)
+- shebang-regex@3.0.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- simple-update-notifier@2.0.0: LICENSE (SHA-256 c34396f8f573f642c7ce5d18fb9b46b2d85e46979f8c06facca387c5293baede)
+- slice-ansi@3.0.0: installed package 内に license file が見つかりません
+- smart-buffer@4.2.0: installed package 内に license file が見つかりません
+- sonic-boom@4.2.1: LICENSE (SHA-256 db5c3795cb080810fed0380bf4d6adef3f81579e8ae3a867d3c2abab2329db9d)
+- source-map-support@0.5.21: LICENSE.md (SHA-256 3a7d3bb198e909ed642bd68bd29a7d7c09a636d27a51ec663d35f00c4760ec42)
+- specqr@2.4.0: LICENSE (SHA-256 1157df45638ac01cda5a925b546618c19a45835e4a9494e711d8047f5e5f39c9)
+- stat-mode@1.0.0: LICENSE (SHA-256 57e9315162353f033b16b7dfb95dd1aab998a0c8dcae9f198988c4a25ffebc0d)
+- string-width@4.2.3: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- strip-ansi@6.0.1: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- supports-color@7.2.0: license (SHA-256 48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0)
+- temp@0.9.4: LICENSE (SHA-256 63053a2fc2b06fe2138fa128ab29c487e28e38be8a7b9c16a4ef7209e945c0b0)
+- temp-file@3.4.0: installed package 内に license file が見つかりません
+- thread-stream@3.1.0: LICENSE (SHA-256 47404ffc18f1267832bc0623857871de5a3a93ebb19693f5e1b963af91fab54b)
+- tiny-async-pool@1.3.0: installed package 内に license file が見つかりません
+- tinyglobby@0.2.16: LICENSE (SHA-256 22c68811e174cbbfb3813d4135918df4f540959c14d872e601d9abe83d3cde8f)
+- tinyglobby@0.2.17: LICENSE (SHA-256 22c68811e174cbbfb3813d4135918df4f540959c14d872e601d9abe83d3cde8f)
+- tmp@0.2.7: LICENSE (SHA-256 162413c61e0982abe89a06bf7a02ec760dc49a7364d838bd9f01daebb5b95954)
+- tmp-promise@3.0.3: installed package 内に license file が見つかりません
+- toad-cache@3.7.1: LICENSE (SHA-256 644304c533dee96438937c0bdcbb49897d80fd8df3be4573f3c57b9c2ca22587)
+- tsx@4.22.3: LICENSE (SHA-256 8dded67841a9261a622c739fb61c81785e93765de852828ceeb9403d20a74581)
+- undici@6.27.0: LICENSE (SHA-256 a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27)
+- undici@7.28.0: LICENSE (SHA-256 a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27)
+- undici-types@6.21.0: LICENSE (SHA-256 a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27)
+- undici-types@7.16.0: LICENSE (SHA-256 a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27)
+- undici-types@7.24.6: LICENSE (SHA-256 a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27)
+- universalify@0.1.2: LICENSE (SHA-256 3fda5977c0904e226190b4e21d64340c1731e2142d6fe5f3dee0090a216b8b63)
+- universalify@2.0.1: LICENSE (SHA-256 3fda5977c0904e226190b4e21d64340c1731e2142d6fe5f3dee0090a216b8b63)
+- update-browserslist-db@1.2.3: LICENSE (SHA-256 c414dde36704bd9c8a76c7aa2921b19270ff9abeb478ea0050250d16cf29b0f6)
+- verror@1.10.1: installed package 内に license file が見つかりません
+- vite@6.4.3: LICENSE.md (SHA-256 008938a3441801ca3960f8e3ccb4c0738e7996442a53063141d57d3769a7344d)
+- wrap-ansi@7.0.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+- xmlbuilder@15.1.1: LICENSE (SHA-256 e368bc4263b466cf98c225af15e300549e00da8859416a4536109e9654d434a8)
+- yargs@17.7.2: LICENSE (SHA-256 2f1a503bfab84b3ba7393627308b3274501e459e3b5185bbb56bbf16cb1602d4)
+- yauzl@3.4.0: LICENSE (SHA-256 b303783d5eb7ca50b853ffa5f145e4e7998fab339831d848f507ca6cd970577a)
+- yazl@3.3.1: LICENSE (SHA-256 b303783d5eb7ca50b853ffa5f145e4e7998fab339831d848f507ca6cd970577a)
+- yocto-queue@0.1.0: license (SHA-256 5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3)
+
+## Python-2.0
+
+- argparse@2.0.1: LICENSE (SHA-256 de4d1f2d2ad5ad0cfd1657a106476b31cb5db5ef9d1ff842b237c0c81f0c8a23)
+
+## WTFPL
+
+- truncate-utf8-bytes@1.0.2: installed package 内に license file が見つかりません
+
+## WTFPL OR ISC
+
+- sanitize-filename@1.6.4: LICENSE.md (SHA-256 69dbd0bb60112fbdd6da878a5ecddee7ddac764d669591d7846cb0310c6e7be8)

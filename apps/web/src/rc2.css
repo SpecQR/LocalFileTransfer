@@ -1,0 +1,241 @@
+/* RC.2 Shared text layer. QR and room geometry remain unchanged. */
+.shared-text-tool {
+   position: relative;
+}
+
+.shared-text-unread {
+   background: #e6a328;
+   border: 2px solid #f5f7f4;
+   border-radius: 50%;
+   height: 9px;
+   position: absolute;
+   right: 3px;
+   top: 3px;
+   width: 9px;
+}
+
+.room-mobile .shared-text-unread {
+   border-color: #f5f7f4;
+   right: 5px;
+   top: 5px;
+}
+
+.shared-text-backdrop {
+   align-items: center;
+   background: rgb(21 34 29 / 42%);
+   display: flex;
+   inset: 0;
+   justify-content: center;
+   padding: 10px;
+   position: fixed;
+   z-index: 1100;
+}
+
+.shared-text-dialog {
+   background: #f8faf8;
+   border: 1px solid #c7d5ce;
+   border-radius: 8px;
+   box-shadow: 0 16px 36px rgb(21 45 36 / 22%);
+   display: grid;
+   grid-template-rows: auto minmax(0, 1fr) auto;
+   max-height: calc(100dvh - 20px);
+   max-width: 430px;
+   overflow: hidden;
+   width: 100%;
+}
+
+.shared-text-header {
+   align-items: center;
+   border-bottom: 1px solid #d7e0dc;
+   display: flex;
+   justify-content: space-between;
+   min-height: 46px;
+   padding: 4px 6px 4px 12px;
+}
+
+.shared-text-header h2 {
+   font-size: 0.95rem;
+   line-height: 1.25;
+   margin: 0;
+}
+
+.shared-text-close {
+   height: 38px;
+   min-height: 38px;
+   min-width: 38px;
+   width: 38px;
+}
+
+.shared-text-body {
+   display: grid;
+   gap: 7px;
+   min-height: 0;
+   overflow: auto;
+   overscroll-behavior: contain;
+   padding: 10px 11px;
+}
+
+.shared-text-body textarea {
+   background: #ffffff;
+   border: 1px solid #bfcfc7;
+   border-radius: 7px;
+   color: #17261f;
+   font: inherit;
+   font-size: 0.86rem;
+   height: 176px;
+   line-height: 1.45;
+   max-width: 100%;
+   min-height: 116px;
+   padding: 9px 10px;
+   resize: vertical;
+   width: 100%;
+}
+
+.shared-text-body textarea:focus-visible {
+   border-color: #227b69;
+   outline: 3px solid rgb(228 164 40 / 45%);
+   outline-offset: 1px;
+}
+
+.shared-text-body textarea:disabled {
+   background: #edf2ef;
+}
+
+.shared-text-meta {
+   align-items: center;
+   color: #5b6e65;
+   display: flex;
+   font-size: 0.69rem;
+   gap: 8px;
+   justify-content: space-between;
+   min-height: 17px;
+}
+
+.shared-text-meta > span:first-child {
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.shared-text-meta > span:last-child {
+   flex: 0 0 auto;
+   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+.shared-text-limit-error,
+.shared-text-error {
+   color: #a4382b;
+}
+
+.shared-text-error {
+   font-size: 0.72rem;
+   margin: 0;
+}
+
+.shared-text-conflict {
+   border-bottom: 1px solid #e1c581;
+   border-top: 1px solid #e1c581;
+   display: grid;
+   gap: 5px;
+   padding: 8px 0;
+}
+
+.shared-text-conflict strong,
+.shared-text-conflict p {
+   font-size: 0.73rem;
+   line-height: 1.35;
+   margin: 0;
+}
+
+.shared-text-conflict p {
+   color: #5c665d;
+}
+
+.shared-text-conflict > div {
+   display: grid;
+   gap: 6px;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shared-text-conflict button,
+.shared-text-share {
+   align-items: center;
+   border: 1px solid #c5d4cd;
+   border-radius: 7px;
+   display: inline-flex;
+   font-size: 0.74rem;
+   font-weight: 780;
+   justify-content: center;
+   min-height: 38px;
+   padding: 0 9px;
+}
+
+.shared-text-conflict button {
+   background: #ffffff;
+   color: #20342d;
+}
+
+.shared-text-conflict .shared-text-conflict-replace,
+.shared-text-share {
+   background: #1f7f6d;
+   border-color: #1f7f6d;
+   color: #ffffff;
+}
+
+.shared-text-actions {
+   align-items: center;
+   border-top: 1px solid #d7e0dc;
+   display: flex;
+   gap: 8px;
+   justify-content: space-between;
+   min-height: 52px;
+   padding: 6px 8px;
+}
+
+.shared-text-actions > div {
+   display: flex;
+   gap: 2px;
+}
+
+.shared-text-share {
+   gap: 6px;
+   min-width: 88px;
+}
+
+.shared-text-share:disabled,
+.shared-text-conflict button:disabled,
+.shared-text-actions .icon-button:disabled {
+   cursor: default;
+   opacity: 0.46;
+}
+
+.shared-text-share:focus-visible,
+.shared-text-conflict button:focus-visible {
+   outline: 3px solid rgb(228 164 40 / 52%);
+   outline-offset: 2px;
+}
+
+@media (max-width: 519px) {
+   html:not(.desktop-transfer-document) .shared-text-backdrop {
+      align-items: flex-end;
+      padding: 0;
+   }
+
+   html:not(.desktop-transfer-document) .shared-text-dialog {
+      border-bottom: 0;
+      border-left: 0;
+      border-radius: 8px 8px 0 0;
+      border-right: 0;
+      max-height: min(82dvh, 620px);
+      max-width: none;
+   }
+
+   html:not(.desktop-transfer-document) .shared-text-body textarea {
+      height: 210px;
+   }
+
+   html:not(.desktop-transfer-document) .shared-text-actions {
+      padding-bottom: max(7px, env(safe-area-inset-bottom));
+   }
+}
