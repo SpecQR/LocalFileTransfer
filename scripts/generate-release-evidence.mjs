@@ -223,7 +223,7 @@ async function artifactEvidence(releaseVersion) {
       return [];
    }
 
-   const prefix = "Local File Transfer-" + releaseVersion + "-";
+   const prefix = "Local.File.Transfer-" + releaseVersion + "-";
    const matching = names.filter((name) => name.startsWith(prefix) && name.endsWith(".exe")).sort();
    const results = [];
 

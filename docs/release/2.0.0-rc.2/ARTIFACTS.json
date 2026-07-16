@@ -4,14 +4,14 @@
    "version": "2.0.0-rc.2",
    "artifacts": [
       {
-         "name": "Local File Transfer-2.0.0-rc.2-arm64-Portable.exe",
+         "name": "Local.File.Transfer-2.0.0-rc.2-arm64-Portable.exe",
          "size": 96761317,
          "sha256": "07FE5DB06E8059E4F81A35689C522D6414F4D67C0D7C0B60AF9B149E7B4E0172",
          "architecture": "arm64",
          "authenticode": "NotSigned"
       },
       {
-         "name": "Local File Transfer-2.0.0-rc.2-x64-Portable.exe",
+         "name": "Local.File.Transfer-2.0.0-rc.2-x64-Portable.exe",
          "size": 105186228,
          "sha256": "2A204299CAF932DF4BD13202E8A9F0D0FD44B4973CCDB28B13D5A70165FF1DAD",
          "architecture": "x64",

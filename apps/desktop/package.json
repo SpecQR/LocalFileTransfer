@@ -59,7 +59,7 @@
          ]
       },
       "portable": {
-         "artifactName": "${productName}-${version}-${arch}-Portable.${ext}"
+         "artifactName": "Local.File.Transfer-${version}-${arch}-Portable.${ext}"
       }
    },
    "dependencies": {

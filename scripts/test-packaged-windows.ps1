@@ -116,7 +116,7 @@ function Wait-HttpClosed {
 $Root = Split-Path -Parent $PSScriptRoot
 $Version = (Get-Content -LiteralPath (Join-Path $Root "package.json") -Raw | ConvertFrom-Json).version
 $EvidenceLabel = if ($Version -match "-rc\.(\d+)$") { "RC" + $Matches[1] } else { $Version -replace "[^A-Za-z0-9]", "_" }
-$ArtifactName = "Local File Transfer-$Version-x64-Portable.exe"
+$ArtifactName = "Local.File.Transfer-$Version-x64-Portable.exe"
 $Artifact = Join-Path $Root "apps\desktop\release\$ArtifactName"
 $RunRoot = Join-Path ([IO.Path]::GetTempPath()) ("lft-packaged-smoke-" + [guid]::NewGuid().ToString("N"))
 $UserData = Join-Path $RunRoot "user-data"

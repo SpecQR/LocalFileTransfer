@@ -24,7 +24,7 @@ if (!Array.isArray(targets) || targets.length !== 1 || targets[0] !== "portable"
    throw new Error("Windows release configuration must target Portable only");
 }
 
-if (build.portable?.artifactName !== "${productName}-${version}-${arch}-Portable.${ext}") {
+if (build.portable?.artifactName !== "Local.File.Transfer-${version}-${arch}-Portable.${ext}") {
    throw new Error("Portable artifacts must include version and architecture");
 }
 

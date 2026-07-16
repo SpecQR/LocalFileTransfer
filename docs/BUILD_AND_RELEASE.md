@@ -50,8 +50,8 @@ npm run dist:windows:arm64
 RC.2 の expected artifact name:
 
 ```text
-Local File Transfer-2.0.0-rc.2-x64-Portable.exe
-Local File Transfer-2.0.0-rc.2-arm64-Portable.exe
+Local.File.Transfer-2.0.0-rc.2-x64-Portable.exe
+Local.File.Transfer-2.0.0-rc.2-arm64-Portable.exe
 ```
 
 Portable executable は Git へ commit せず、GitHub Release asset としてのみ公開します。

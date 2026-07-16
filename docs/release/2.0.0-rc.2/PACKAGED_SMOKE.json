@@ -1,7 +1,7 @@
 {
     "schemaVersion":  1,
     "testedAt":  "2026-07-15T16:25:08.1807966Z",
-    "artifact":  "Local File Transfer-2.0.0-rc.2-x64-Portable.exe",
+    "artifact":  "Local.File.Transfer-2.0.0-rc.2-x64-Portable.exe",
     "length":  105186228,
     "sha256":  "2A204299CAF932DF4BD13202E8A9F0D0FD44B4973CCDB28B13D5A70165FF1DAD",
     "authenticodeStatus":  "NotSigned",
