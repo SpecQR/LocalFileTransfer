@@ -167,23 +167,47 @@ jobs:
               $assets = @(Get-ChildItem -LiteralPath $releaseDirectory -File | ForEach-Object FullName)
               $title = "Local File Transfer $env:LFT_VERSION"
 
-              gh release view $env:LFT_RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
+              $existingReleaseJson = gh release view $env:LFT_RELEASE_TAG `
+                 --repo $env:GITHUB_REPOSITORY `
+                 --json isDraft 2> $null
               if ($LASTEXITCODE -eq 0) {
+                 $existingRelease = $existingReleaseJson | ConvertFrom-Json
+                 if (-not $existingRelease.isDraft) {
+                    throw "Release is already published; refusing to mutate immutable assets"
+                 }
                  gh release edit $env:LFT_RELEASE_TAG `
                     --repo $env:GITHUB_REPOSITORY `
                     --title $title `
                     --notes-file $notes `
                     --prerelease
+                 if ($LASTEXITCODE -ne 0) {
+                    throw "Failed to update the draft prerelease metadata"
+                 }
                  gh release upload $env:LFT_RELEASE_TAG @assets `
                     --repo $env:GITHUB_REPOSITORY `
                     --clobber
+                 if ($LASTEXITCODE -ne 0) {
+                    throw "Failed to upload the draft prerelease assets"
+                 }
               } else {
                  gh release create $env:LFT_RELEASE_TAG @assets `
                     --repo $env:GITHUB_REPOSITORY `
                     --title $title `
                     --notes-file $notes `
+                    --draft `
                     --prerelease `
                     --verify-tag
+                 if ($LASTEXITCODE -ne 0) {
+                    throw "Failed to create the draft prerelease"
+                 }
+              }
+
+              gh release edit $env:LFT_RELEASE_TAG `
+                 --repo $env:GITHUB_REPOSITORY `
+                 --draft=false `
+                 --prerelease
+              if ($LASTEXITCODE -ne 0) {
+                 throw "Failed to publish the verified prerelease"
               }
 
          - name: 公開結果を再検証
@@ -193,9 +217,21 @@ jobs:
               $expectedAssetCount = @(Get-ChildItem -LiteralPath $releaseDirectory -File).Count
               $release = gh release view $env:LFT_RELEASE_TAG `
                  --repo $env:GITHUB_REPOSITORY `
-                 --json tagName,isPrerelease,assets,url | ConvertFrom-Json
-              if ($release.tagName -ne $env:LFT_RELEASE_TAG -or -not $release.isPrerelease) {
-                 throw "Published release identity or prerelease state is invalid"
+                 --json tagName,isDraft,isPrerelease,publishedAt,assets,url | ConvertFrom-Json
+              if ($LASTEXITCODE -ne 0) {
+                 throw "Published prerelease could not be read back"
+              }
+              if (
+                 $release.tagName -ne $env:LFT_RELEASE_TAG -or
+                 $release.isDraft -or
+                 -not $release.isPrerelease -or
+                 [string]::IsNullOrWhiteSpace([string]$release.publishedAt)
+              ) {
+                 throw "Published release identity, draft, prerelease, or timestamp state is invalid"
+              }
+              $expectedReleaseUrl = "https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$env:LFT_RELEASE_TAG"
+              if ($release.url -ne $expectedReleaseUrl) {
+                 throw "Published release URL does not use the immutable tag"
               }
               if (@($release.assets).Count -ne $expectedAssetCount) {
                  throw "Published release asset count does not match staged asset count"

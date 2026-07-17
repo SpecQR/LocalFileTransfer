@@ -212,3 +212,19 @@ test("packaged smoke PowerShell parses before release", () => {
    assert.doesNotMatch(smokeSource, /Get-FileHash|Get-AuthenticodeSignature/u);
    assert.match(smokeSource, /inspect-release-artifact\.mjs/u);
 });
+
+test("release workflow publishes only after draft assets are staged", () => {
+   const scriptsDir = dirname(fileURLToPath(import.meta.url));
+   const workflowPath = join(scriptsDir, "..", ".github", "workflows", "release.yml");
+   const workflowSource = readFileSync(workflowPath, "utf8");
+
+   assert.match(workflowSource, /--draft `\r?\n\s+--prerelease/u);
+   assert.match(workflowSource, /--draft=false `\r?\n\s+--prerelease/u);
+   assert.match(
+      workflowSource,
+      /--json tagName,isDraft,isPrerelease,publishedAt,assets,url/u
+   );
+   assert.match(workflowSource, /\$release\.isDraft/u);
+   assert.match(workflowSource, /\$release\.publishedAt/u);
+   assert.match(workflowSource, /releases\/tag\/\$env:LFT_RELEASE_TAG/u);
+});
