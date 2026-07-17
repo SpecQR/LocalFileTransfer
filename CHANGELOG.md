@@ -9,6 +9,7 @@
 - Browser client の共有テキスト入力欄を 16 px 以上にし、iPhone Safari でフォーカス時に画面が自動拡大される挙動を防止しました。
 - `maximum-scale` や `user-scalable=no` は使用せず、ユーザーが行う通常のピンチズームは維持します。
 - Android Chromium と iPhone WebKit の E2E に、入力文字サイズと viewport policy の回帰検査を追加しました。
+- 物理 iPhone SE（第2世代）と iPhone 16e の Safari で、自動ズームが発生しないことを確認しました。
 
 ## [2.0.0-rc.5] - 2026-07-17
 
