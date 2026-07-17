@@ -2,6 +2,13 @@
 
 公開上重要な変更をこの文書へ記録します。この repository の公開履歴は RC.2 から始まります。非公開 prototype と公開前 artifact は履歴に含めません。
 
+## Unreleased
+
+### Release engineering
+
+- Stable release の `Latest` 指定を draft 作成時ではなく、検証済み draft の公開時だけ付与するよう修正しました。
+- 全 `electron-builder` release script に `--publish never` を設定し、GitHub Release asset は全 gate と staging の完了後に workflow が明示的に upload するよう固定しました。
+
 ## [2.0.0] - 2026-07-18
 
 ### 正式公開

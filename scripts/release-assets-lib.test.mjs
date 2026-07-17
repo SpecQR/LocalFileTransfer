@@ -256,11 +256,26 @@ test("release workflow publishes RC and stable channels only after draft assets 
    const workflowSource = readFileSync(workflowPath, "utf8");
 
    assert.match(workflowSource, /LFT_IS_PRERELEASE/u);
-   assert.match(workflowSource, /\$releaseChannelArgs = if \(\$isPrerelease\)/u);
-   assert.match(workflowSource, /@?\("--prerelease"\)/u);
-   assert.match(workflowSource, /"--prerelease=false", "--latest"/u);
+   assert.match(workflowSource, /\$draftChannelArgs = if \(\$isPrerelease\)/u);
+   assert.match(workflowSource, /\$publishChannelArgs = if \(\$isPrerelease\)/u);
+   assert.match(
+      workflowSource,
+      /\$draftChannelArgs[\s\S]*?@\("--prerelease=false"\)/u
+   );
+   assert.match(
+      workflowSource,
+      /\$publishChannelArgs[\s\S]*?@\("--prerelease=false", "--latest"\)/u
+   );
    assert.match(workflowSource, /--draft `/u);
    assert.match(workflowSource, /--draft=false `/u);
+   assert.match(
+      workflowSource,
+      /--draft `[\s\S]*?--verify-tag `[\s\S]*?@draftChannelArgs/u
+   );
+   assert.match(
+      workflowSource,
+      /--draft=false `\r?\n\s+@publishChannelArgs/u
+   );
    assert.match(
       workflowSource,
       /--json tagName,isDraft,isPrerelease,publishedAt,assets,url/u

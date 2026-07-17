@@ -32,6 +32,10 @@ for (const name of ["dist", "dist:arm64", "dist:signed:x64", "dist:signed:arm64"
    if (typeof manifest.scripts?.[name] !== "string") {
       throw new Error("Missing release script: " + name);
    }
+
+   if (!manifest.scripts[name].includes("--publish never")) {
+      throw new Error(name + " must disable electron-builder auto-publish");
+   }
 }
 
 for (const name of ["dist:signed:x64", "dist:signed:arm64"]) {
@@ -45,6 +49,7 @@ process.stdout.write(JSON.stringify({
    productName: build.productName,
    targets,
    portableArtifactName: build.portable.artifactName,
+   electronBuilderAutoPublish: false,
    signingCredentialsEmbedded: false,
    updaterConfigured: false
 }, null, 3) + "\n");

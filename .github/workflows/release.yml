@@ -169,7 +169,12 @@ jobs:
               $assets = @(Get-ChildItem -LiteralPath $releaseDirectory -File | ForEach-Object FullName)
               $title = "Local File Transfer $env:LFT_VERSION"
               $isPrerelease = $env:LFT_IS_PRERELEASE -eq "true"
-              $releaseChannelArgs = if ($isPrerelease) {
+              $draftChannelArgs = if ($isPrerelease) {
+                 @("--prerelease")
+              } else {
+                 @("--prerelease=false")
+              }
+              $publishChannelArgs = if ($isPrerelease) {
                  @("--prerelease")
               } else {
                  @("--prerelease=false", "--latest")
@@ -187,7 +192,7 @@ jobs:
                     --repo $env:GITHUB_REPOSITORY `
                     --title $title `
                     --notes-file $notes `
-                    @releaseChannelArgs
+                    @draftChannelArgs
                  if ($LASTEXITCODE -ne 0) {
                     throw "Failed to update the draft release metadata"
                  }
@@ -204,7 +209,7 @@ jobs:
                     --notes-file $notes `
                     --draft `
                     --verify-tag `
-                    @releaseChannelArgs
+                    @draftChannelArgs
                  if ($LASTEXITCODE -ne 0) {
                     throw "Failed to create the draft release"
                  }
@@ -213,7 +218,7 @@ jobs:
               gh release edit $env:LFT_RELEASE_TAG `
                  --repo $env:GITHUB_REPOSITORY `
                  --draft=false `
-                 @releaseChannelArgs
+                 @publishChannelArgs
               if ($LASTEXITCODE -ne 0) {
                  throw "Failed to publish the verified release"
               }

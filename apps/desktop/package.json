@@ -16,13 +16,13 @@
       "build": "tsc -p tsconfig.json --noEmit && esbuild src/main.ts --bundle --platform=node --format=cjs --outfile=dist/main.cjs --external:electron && esbuild src/service.ts --bundle --platform=node --format=cjs --outfile=dist/service.cjs --external:electron && esbuild src/preload.ts --bundle --platform=node --format=cjs --outfile=dist/preload.cjs --external:electron",
       "dev": "npm run build --prefix ../web && npm run build && electron .",
       "pack": "npm run build --prefix ../web && npm run build && electron-builder --dir",
-      "dist": "npm run build --prefix ../web && npm run build && electron-builder --win portable --x64",
+      "dist": "npm run build --prefix ../web && npm run build && electron-builder --win portable --x64 --publish never",
       "verify:fuses": "node scripts/verify-fuses.cjs \"release/win-unpacked/Local File Transfer.exe\"",
       "verify:fuses:arm64": "node scripts/verify-fuses.cjs \"release/win-arm64-unpacked/Local File Transfer.exe\"",
       "verify:release-config": "node scripts/verify-release-config.cjs",
-      "dist:arm64": "npm run build --prefix ../web && npm run build && electron-builder --win portable --arm64",
-      "dist:signed:x64": "node scripts/require-signing-env.cjs && npm run build --prefix ../web && npm run build && electron-builder --win portable --x64",
-      "dist:signed:arm64": "node scripts/require-signing-env.cjs && npm run build --prefix ../web && npm run build && electron-builder --win portable --arm64",
+      "dist:arm64": "npm run build --prefix ../web && npm run build && electron-builder --win portable --arm64 --publish never",
+      "dist:signed:x64": "node scripts/require-signing-env.cjs && npm run build --prefix ../web && npm run build && electron-builder --win portable --x64 --publish never",
+      "dist:signed:arm64": "node scripts/require-signing-env.cjs && npm run build --prefix ../web && npm run build && electron-builder --win portable --arm64 --publish never",
       "postinstall": "node node_modules/electron/install.js"
    },
    "build": {

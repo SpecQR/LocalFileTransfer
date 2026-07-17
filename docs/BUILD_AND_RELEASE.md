@@ -6,6 +6,8 @@ Local File Transfer の public artifact は Windows Portable EXE です。`v<pac
 
 Release workflow は途中の test result や手元で作った EXE を再利用しません。Tag の source と 4 scope の lockfile から clean install し、公開する exact artifact をその run 内で作ります。
 
+`electron-builder` は全 release script で `--publish never` とし、tag event と `GH_TOKEN` を検出して draft へ先行 upload しないよう固定します。GitHub Release の作成、asset upload、publish は、すべての gate と staging が完了した後に workflow の明示 step だけが行います。Stable の `--latest` は draft 作成時には渡さず、`--draft=false` と同時にだけ指定します。
+
 Source と lockfile は rebuild 可能な入力として固定しますが、Electron/NSIS metadata 等のため bit-for-bit reproducible build は主張しません。公開 EXE と build workflow/source commit の結び付けは GitHub Artifact Attestation、実体の同一性は SHA-256 で確認します。
 
 ## Toolchain
