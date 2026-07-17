@@ -35,14 +35,14 @@ QR の URL fragment には、一時的な room capability が入ります。Frag
 
 ## ダウンロードと使い方
 
-1. [v2.0.0-rc.4 Release](https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.4) を開きます。
+1. [v2.0.0-rc.5 Release](https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.5) を開きます。
 2. 通常の Intel/AMD Windows PC では `x64-Portable.exe`、Windows on ARM では `arm64-Portable.exe` を選びます。
 3. `SHA256SUMS.txt` と download したファイルの SHA-256 が一致することを確認します。GitHub CLI がある場合は `gh attestation verify <EXE> --repo SpecQR/LocalFileTransfer` でも provenance を検証できます。
 4. EXE を起動します。Windows Firewall が表示された場合は、信頼できる private network だけに許可します。
 5. 同じ LAN に接続した端末から QR を読み取ります。
 6. File を追加し、upload または download します。Reset すると新しいルームが作成され、古い QR は無効になります。
 
-RC.4 の実行ファイルは Authenticode 未署名です。Windows SmartScreen が警告を表示する場合があります。
+RC.5 の実行ファイルは Authenticode 未署名です。Windows SmartScreen が警告を表示する場合があります。
 
 - x64 build: packaged launch、Utility Process recovery、clean shutdown を含む runtime smoke 済み。
 - ARM64 build: build、PE architecture、Electron fuse、static validation 済み。物理 Windows on ARM での runtime test は未実施。
@@ -115,7 +115,7 @@ docs/          Architecture、protocol、security、test、release evidence
 - [Maintainer / AI agent 向け context](docs/AI_CONTEXT.md)
 - [プロジェクト言語方針](docs/PROJECT_LANGUAGE.md)
 
-## RC.4 の検証状況
+## RC.5 の検証状況
 
 Tag-driven release workflow は unit/integration、browser/Electron E2E、x64/ARM64 build、PE/fuse、DPI geometry、x64 packaged service recovery、dependency audit、SBOM、SHA-256、GitHub Artifact Attestation を clean Windows runner で実行します。Exact count と結果は Release に添付した machine-readable evidence を参照してください。
 

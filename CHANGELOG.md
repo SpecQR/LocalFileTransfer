@@ -2,6 +2,16 @@
 
 公開上重要な変更をこの文書へ記録します。この repository の公開履歴は RC.2 から始まります。非公開 prototype と公開前 artifact は履歴に含めません。
 
+## [2.0.0-rc.5] - 2026-07-17
+
+### Release engineering
+
+- Portable artifact の SHA-256 と Authenticode certificate-table presence を Node.js で検査し、PowerShell module の暗黙読み込みへの依存を削除しました。
+- PE/DOS signature、optional header、security directory、certificate table の境界を検証し、署名テーブルがあるだけで有効署名とは主張しない保守的な evidence contract を追加しました。
+- Packaged smoke と release evidence generator は同じ inspector を使用します。
+- Utility Process 復旧後も `localUrl` が同じ場合は BrowserWindow を強制再読み込みせず、既存 renderer の reconnect state を維持します。
+- `v2.0.0-rc.4` は service recovery の全検証後、Windows Server 2022 hosted runner で `Get-FileHash` が利用できず evidence 作成前に停止しました。GitHub Release は公開せず、Tag は履歴として書き換えません。
+
 ## [2.0.0-rc.4] - 2026-07-17
 
 ### Release engineering
@@ -48,5 +58,6 @@
 - 物理 iPhone Safari と Android Chrome: manual qualification gate として未実施。
 
 [2.0.0-rc.2]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.2
-[2.0.0-rc.4]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.4
+[2.0.0-rc.5]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.5
+[2.0.0-rc.4]: https://github.com/SpecQR/LocalFileTransfer/tree/v2.0.0-rc.4
 [2.0.0-rc.3]: https://github.com/SpecQR/LocalFileTransfer/tree/v2.0.0-rc.3

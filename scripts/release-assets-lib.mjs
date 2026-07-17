@@ -45,6 +45,75 @@ export function sha256(bytes) {
    return createHash("sha256").update(bytes).digest("hex").toUpperCase();
 }
 
+export function authenticodeStatusFromPe(bytes) {
+   const buffer = Buffer.isBuffer(bytes)
+      ? bytes
+      : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+   if (buffer.byteLength < 64 || buffer.readUInt16LE(0) !== 0x5a4d) {
+      throw new Error("Artifact is not a valid DOS/PE image");
+   }
+
+   const peOffset = buffer.readUInt32LE(0x3c);
+   const optionalHeaderOffset = peOffset + 24;
+
+   assertReadable(buffer, peOffset, 24, "PE header");
+
+   if (buffer.readUInt32LE(peOffset) !== 0x00004550) {
+      throw new Error("Artifact is missing the PE signature");
+   }
+
+   const optionalHeaderSize = buffer.readUInt16LE(peOffset + 20);
+   const optionalHeaderEnd = optionalHeaderOffset + optionalHeaderSize;
+
+   assertReadable(buffer, optionalHeaderOffset, optionalHeaderSize, "PE optional header");
+
+   const magic = buffer.readUInt16LE(optionalHeaderOffset);
+   const dataDirectoryOffset = magic === 0x10b
+      ? 96
+      : magic === 0x20b
+         ? 112
+         : -1;
+
+   if (dataDirectoryOffset < 0) {
+      throw new Error("Artifact has an unsupported PE optional-header magic");
+   }
+
+   const securityDirectoryOffset = optionalHeaderOffset + dataDirectoryOffset + (4 * 8);
+
+   if (securityDirectoryOffset + 8 > optionalHeaderEnd) {
+      throw new Error("Artifact PE header does not contain a security directory");
+   }
+
+   const numberOfDirectories = buffer.readUInt32LE(
+      optionalHeaderOffset + dataDirectoryOffset - 4
+   );
+
+   if (numberOfDirectories < 5) {
+      throw new Error("Artifact PE header does not declare a security directory");
+   }
+
+   const certificateOffset = buffer.readUInt32LE(securityDirectoryOffset);
+   const certificateSize = buffer.readUInt32LE(securityDirectoryOffset + 4);
+
+   if (certificateOffset === 0 && certificateSize === 0) {
+      return "NotSigned";
+   }
+
+   if (
+      certificateOffset === 0
+      || certificateSize < 8
+      || certificateOffset % 8 !== 0
+      || certificateOffset + certificateSize > buffer.byteLength
+   ) {
+      throw new Error("Artifact has an invalid PE certificate table");
+   }
+
+   assertCertificateTable(buffer, certificateOffset, certificateSize);
+
+   return "PresentUnverified";
+}
+
 export function createManifestEntries(files) {
    return files
       .map(({ name, bytes }) => {
@@ -57,6 +126,39 @@ export function createManifestEntries(files) {
          };
       })
       .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function assertReadable(buffer, offset, length, label) {
+   if (
+      !Number.isSafeInteger(offset)
+      || !Number.isSafeInteger(length)
+      || offset < 0
+      || length < 0
+      || offset + length > buffer.byteLength
+   ) {
+      throw new Error("Artifact has a truncated " + label);
+   }
+}
+
+function assertCertificateTable(buffer, offset, size) {
+   const end = offset + size;
+   let cursor = offset;
+
+   while (cursor < end) {
+      assertReadable(buffer, cursor, 8, "WIN_CERTIFICATE header");
+
+      const certificateLength = buffer.readUInt32LE(cursor);
+
+      if (certificateLength < 8 || cursor + certificateLength > end) {
+         throw new Error("Artifact has an invalid WIN_CERTIFICATE length");
+      }
+
+      cursor += Math.ceil(certificateLength / 8) * 8;
+   }
+
+   if (cursor !== end) {
+      throw new Error("Artifact has invalid WIN_CERTIFICATE alignment");
+   }
 }
 
 export function createChecksumDocument(entries) {

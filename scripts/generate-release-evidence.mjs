@@ -9,6 +9,10 @@ import {
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+   authenticodeStatusFromPe,
+   sha256
+} from "./release-assets-lib.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const rootManifest = await readJson(join(root, "package.json"));
@@ -234,24 +238,13 @@ async function artifactEvidence(releaseVersion) {
       results.push({
          name,
          size: bytes.byteLength,
-         sha256: createHash("sha256").update(bytes).digest("hex").toUpperCase(),
+         sha256: sha256(bytes),
          architecture: name.includes("-arm64-") ? "arm64" : name.includes("-x64-") ? "x64" : "unknown",
-         authenticode: authenticodeStatus(path)
+         authenticode: authenticodeStatusFromPe(bytes)
       });
    }
 
    return results;
-}
-
-function authenticodeStatus(path) {
-   const command = "(Get-AuthenticodeSignature -LiteralPath $env:LFT_ARTIFACT_PATH).Status.ToString()";
-   const result = spawnSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", command], {
-      encoding: "utf8",
-      env: { ...process.env, LFT_ARTIFACT_PATH: path },
-      windowsHide: true
-   });
-
-   return result.status === 0 ? result.stdout.trim() : "Unavailable";
 }
 
 function packageNameFromLockPath(lockPath) {

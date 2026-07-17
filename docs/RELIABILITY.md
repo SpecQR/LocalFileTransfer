@@ -2,7 +2,7 @@
 
 ## 目的
 
-Local File Transfer 2.0.0-rc.4 は、通常時の 300 CSS px UI と操作数を増やさず、失敗時の回復可能性と観測可能性を強化します。中心となる契約は次です。
+Local File Transfer 2.0.0-rc.5 は、通常時の 300 CSS px UI と操作数を増やさず、失敗時の回復可能性と観測可能性を強化します。中心となる契約は次です。
 
 > Browser に acknowledged offset を返した checkpoint は、partial file の `fsync` と SQLite transaction commit の両方が完了している。
 
@@ -82,11 +82,13 @@ SSE opening
 
 Electron main process は Utility Process を監視し、異常終了後に上限付き再起動を行います。`powerMonitor` の `resume` と `unlock-screen` では adapter と room origin を再評価します。
 
+再起動後も `localUrl` が同じなら BrowserWindow を再読み込みせず、既存 renderer の SSE/poll recovery と新しい desktop ticket で復帰します。Port が変わり `localUrl` が変化した場合だけ、新しい `/app` へ明示的に load します。これにより transfer UI state を不要に破棄せず、同じ origin への reload と window lifecycle の競合を避けます。
+
 Room、SQLite、listener を不要に作り直さず、到達可能な preferred origin が変わった場合だけ renderer の QR state を更新します。
 
 ## Compatibility surface
 
-RC.4 の既定 runtime は canonical `/api/v2` room API だけを公開します。
+RC.5 の既定 runtime は canonical `/api/v2` room API だけを公開します。
 
 - `/api/local/*` は `buildApp({ enableLegacyRoutes: true })` の test-only opt-in 時だけ register する。
 - 旧 `PUT /api/v2/rooms/:roomId/uploads/:itemId/chunks` は public route から削除した。

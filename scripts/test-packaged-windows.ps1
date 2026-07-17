@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
 $CurlPath = (Get-Command curl.exe -ErrorAction Stop).Source
+$NodePath = (Get-Command node.exe -ErrorAction Stop).Source
 $LftLastHttpError = $null
 
 function Get-TestProcesses {
@@ -261,14 +262,23 @@ try {
    $EndpointClosed = Wait-HttpClosed -Url "$RecoveredBaseUrl/healthz" -TimeoutSeconds 15
    $Records = @(Get-LogRecords)
    $Residual = @(Get-TestProcesses)
+   $artifactInspectionJson = & $NodePath `
+      (Join-Path $Root "scripts\inspect-release-artifact.mjs") `
+      $Artifact
+
+   if ($LASTEXITCODE -ne 0) {
+      throw "Portable artifact inspection failed with exit code $LASTEXITCODE"
+   }
+
+   $artifactInspection = $artifactInspectionJson | ConvertFrom-Json
 
    $Evidence = [ordered]@{
       schemaVersion = 1
       testedAt = (Get-Date).ToUniversalTime().ToString("o")
       artifact = $ArtifactName
-      length = (Get-Item -LiteralPath $Artifact).Length
-      sha256 = (Get-FileHash -LiteralPath $Artifact -Algorithm SHA256).Hash
-      authenticodeStatus = (Get-AuthenticodeSignature -LiteralPath $Artifact).Status.ToString()
+      length = [int64]$artifactInspection.length
+      sha256 = $artifactInspection.sha256
+      authenticodeStatus = $artifactInspection.authenticodeStatus
       port = $Port
       initialHealthStatus = [int]$Health.StatusCode
       initialHealthBody = $Health.Content

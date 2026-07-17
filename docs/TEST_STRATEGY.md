@@ -4,7 +4,7 @@
 
 Local File Transfer は、browser file provider、local HTTP、Electron process、SQLite、Windows file semantics、dynamic network adapter、responsive UI をまたぎます。単一の test layer だけでは十分な confidence を得られません。
 
-RC.4 は unit test、fault injection、real Fastify integration、browser/Electron E2E、DPI geometry、packaged process test、artifact attestation、physical-device manual gate を組み合わせます。
+RC.5 は unit test、fault injection、real Fastify integration、browser/Electron E2E、DPI geometry、packaged process test、artifact attestation、physical-device manual gate を組み合わせます。
 
 ## Automated layer
 
@@ -58,7 +58,7 @@ x64 Portable smoke は development server ではなく生成した EXE を `--di
 
 PE header と Electron fuse は両 architecture で確認します。ARM64 runtime は物理 device を必要とする別 gate です。
 
-## RC.4 release gate
+## RC.5 release gate
 
 - Unit/integration/release-script test: clean run required
 - Android Chromium と iPhone WebKit E2E: clean run required
@@ -67,7 +67,7 @@ PE header と Electron fuse は両 architecture で確認します。ARM64 runti
 - Build provenance と SBOM attestation の `gh attestation verify`: required
 - ARM64 physical runtime: not performed unless separately recorded
 
-Exact count と artifact-specific result は tag workflow が生成する `docs/release/2.0.0-rc.4` 相当の release evidence に記録します。RC.2 の checked-in evidence を current result として再利用しません。
+Exact count と artifact-specific result は tag workflow が生成する `docs/release/2.0.0-rc.5` 相当の release evidence に記録します。RC.2 の checked-in evidence を current result として再利用しません。
 
 ## Manual release gate
 

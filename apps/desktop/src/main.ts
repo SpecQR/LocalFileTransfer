@@ -384,6 +384,8 @@ function scheduleServiceRecovery(): void {
       return;
    }
 
+   const previousLocalUrl = serviceRuntime?.localUrl;
+
    serviceClient = undefined;
    serviceRuntime = undefined;
    restartPromise = new Promise((resolve) => setTimeout(resolve, 500))
@@ -391,7 +393,14 @@ function scheduleServiceRecovery(): void {
          const runtime = await ensureService();
 
          await ensureActiveRoom(runtime);
-         await mainWindow?.loadURL(`${runtime.localUrl}/app`);
+
+         if (
+            previousLocalUrl !== runtime.localUrl
+            && mainWindow
+            && !mainWindow.isDestroyed()
+         ) {
+            await mainWindow.loadURL(`${runtime.localUrl}/app`);
+         }
       })
       .catch((error: unknown) => {
          const message = error instanceof Error ? error.message : "The transfer service could not restart.";
