@@ -2,6 +2,14 @@
 
 公開上重要な変更をこの文書へ記録します。この repository の公開履歴は RC.2 から始まります。非公開 prototype と公開前 artifact は履歴に含めません。
 
+## Unreleased (`2.0.0-rc.6` candidate)
+
+### 修正
+
+- Browser client の共有テキスト入力欄を 16 px 以上にし、iPhone Safari でフォーカス時に画面が自動拡大される挙動を防止しました。
+- `maximum-scale` や `user-scalable=no` は使用せず、ユーザーが行う通常のピンチズームは維持します。
+- Android Chromium と iPhone WebKit の E2E に、入力文字サイズと viewport policy の回帰検査を追加しました。
+
 ## [2.0.0-rc.5] - 2026-07-17
 
 ### Release engineering

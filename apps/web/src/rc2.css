@@ -91,6 +91,11 @@
    width: 100%;
 }
 
+/* Keep browser clients above iOS Safari's focus-zoom threshold. */
+html:not(.desktop-transfer-document) .shared-text-body textarea {
+   font-size: 16px;
+}
+
 .shared-text-body textarea:focus-visible {
    border-color: #227b69;
    outline: 3px solid rgb(228 164 40 / 45%);

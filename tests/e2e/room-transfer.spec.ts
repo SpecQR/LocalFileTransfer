@@ -205,8 +205,14 @@ test("one QR room transfers both ways and keeps the compact desktop layout stabl
       await mobileSharedOpen.click();
       const mobileSharedDialog = page.getByRole("dialog");
       const mobileSharedInput = mobileSharedDialog.getByTestId("shared-text-input");
+      const mobileSharedInputFontSize = await mobileSharedInput.evaluate(
+         (element) => parseFloat(getComputedStyle(element).fontSize)
+      );
+      const viewportPolicy = await page.locator('meta[name="viewport"]').getAttribute("content");
 
       await expect(mobileSharedInput).toHaveValue(desktopNote);
+      expect(mobileSharedInputFontSize).toBeGreaterThanOrEqual(16);
+      expect(viewportPolicy).not.toMatch(/maximum-scale|user-scalable/iu);
       expect(await page.evaluate(() => (globalThis as { __lftTextExecuted?: number }).__lftTextExecuted)).toBeUndefined();
       await mobileSharedInput.fill(mobileNote);
       await mobileSharedDialog.getByTestId("shared-text-share").click();
