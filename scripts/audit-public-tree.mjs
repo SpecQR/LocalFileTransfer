@@ -180,8 +180,8 @@ async function inspectManifest() {
    ];
    const webManifest = manifests.find(([path]) => path === "apps/web/package.json")?.[1];
 
-   if (!/^\d+\.\d+\.\d+-rc\.\d+$/u.test(publicVersion)) {
-      problems.push("package.json: public version must be an RC prerelease");
+   if (!/^\d+\.\d+\.\d+(?:-rc\.\d+)?$/u.test(publicVersion)) {
+      problems.push("package.json: public version must be a stable release or RC prerelease");
    }
    for (const [path, manifest] of manifests) {
       if (manifest.version !== publicVersion) {
@@ -213,6 +213,7 @@ async function requireFiles() {
       "docs/AI_CONTEXT.md",
       "docs/ARCHITECTURE.md",
       "docs/BUILD_AND_RELEASE.md",
+      "docs/CODE_SIGNING.md",
       "docs/LICENSE_JA.md",
       "docs/MANUAL_TEST_CHECKLIST.md",
       "docs/PRIVACY.md",
@@ -283,7 +284,11 @@ async function inspectWorkflowPins() {
       "actions/attest@",
       "gh attestation verify",
       "npm run release:finalize",
-      "--prerelease"
+      "LFT_IS_PRERELEASE",
+      "--prerelease",
+      "--prerelease=false",
+      "--latest",
+      "$release.isPrerelease -ne $expectedPrerelease"
    ];
 
    for (const marker of requiredMarkers) {

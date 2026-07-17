@@ -1,4 +1,4 @@
-name: RC prerelease
+name: Windows release
 
 on:
    push:
@@ -53,7 +53,9 @@ jobs:
               if ($env:GITHUB_REF_TYPE -ne "tag") {
                  throw "Release workflow must run from a tag"
               }
+              $isPrerelease = $version.Contains("-")
               "LFT_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+              "LFT_IS_PRERELEASE=$($isPrerelease.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
          - name: Root dependency を install
            run: npm ci
@@ -159,13 +161,19 @@ jobs:
               if-no-files-found: error
               retention-days: 30
 
-         - name: GitHub prerelease を作成または更新
+         - name: GitHub release を作成または更新
            shell: pwsh
            run: |
               $releaseDirectory = Join-Path "release-assets" $env:LFT_RELEASE_TAG
               $notes = Join-Path $releaseDirectory "RELEASE_NOTES.md"
               $assets = @(Get-ChildItem -LiteralPath $releaseDirectory -File | ForEach-Object FullName)
               $title = "Local File Transfer $env:LFT_VERSION"
+              $isPrerelease = $env:LFT_IS_PRERELEASE -eq "true"
+              $releaseChannelArgs = if ($isPrerelease) {
+                 @("--prerelease")
+              } else {
+                 @("--prerelease=false", "--latest")
+              }
 
               $existingReleaseJson = gh release view $env:LFT_RELEASE_TAG `
                  --repo $env:GITHUB_REPOSITORY `
@@ -179,9 +187,9 @@ jobs:
                     --repo $env:GITHUB_REPOSITORY `
                     --title $title `
                     --notes-file $notes `
-                    --prerelease
+                    @releaseChannelArgs
                  if ($LASTEXITCODE -ne 0) {
-                    throw "Failed to update the draft prerelease metadata"
+                    throw "Failed to update the draft release metadata"
                  }
                  gh release upload $env:LFT_RELEASE_TAG @assets `
                     --repo $env:GITHUB_REPOSITORY `
@@ -195,19 +203,19 @@ jobs:
                     --title $title `
                     --notes-file $notes `
                     --draft `
-                    --prerelease `
-                    --verify-tag
+                    --verify-tag `
+                    @releaseChannelArgs
                  if ($LASTEXITCODE -ne 0) {
-                    throw "Failed to create the draft prerelease"
+                    throw "Failed to create the draft release"
                  }
               }
 
               gh release edit $env:LFT_RELEASE_TAG `
                  --repo $env:GITHUB_REPOSITORY `
                  --draft=false `
-                 --prerelease
+                 @releaseChannelArgs
               if ($LASTEXITCODE -ne 0) {
-                 throw "Failed to publish the verified prerelease"
+                 throw "Failed to publish the verified release"
               }
 
          - name: 公開結果を再検証
@@ -215,19 +223,20 @@ jobs:
            run: |
               $releaseDirectory = Join-Path "release-assets" $env:LFT_RELEASE_TAG
               $expectedAssetCount = @(Get-ChildItem -LiteralPath $releaseDirectory -File).Count
+              $expectedPrerelease = $env:LFT_IS_PRERELEASE -eq "true"
               $release = gh release view $env:LFT_RELEASE_TAG `
                  --repo $env:GITHUB_REPOSITORY `
                  --json tagName,isDraft,isPrerelease,publishedAt,assets,url | ConvertFrom-Json
               if ($LASTEXITCODE -ne 0) {
-                 throw "Published prerelease could not be read back"
+                 throw "Published release could not be read back"
               }
               if (
                  $release.tagName -ne $env:LFT_RELEASE_TAG -or
                  $release.isDraft -or
-                 -not $release.isPrerelease -or
+                 $release.isPrerelease -ne $expectedPrerelease -or
                  [string]::IsNullOrWhiteSpace([string]$release.publishedAt)
               ) {
-                 throw "Published release identity, draft, prerelease, or timestamp state is invalid"
+                 throw "Published release identity, draft, channel, or timestamp state is invalid"
               }
               $expectedReleaseUrl = "https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$env:LFT_RELEASE_TAG"
               if ($release.url -ne $expectedReleaseUrl) {

@@ -35,14 +35,14 @@ QR の URL fragment には、一時的な room capability が入ります。Frag
 
 ## ダウンロードと使い方
 
-1. [v2.0.0-rc.5 Release](https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.5) を開きます。
+1. [v2.0.0 Release](https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0) を開きます。
 2. 通常の Intel/AMD Windows PC では `x64-Portable.exe`、Windows on ARM では `arm64-Portable.exe` を選びます。
 3. `SHA256SUMS.txt` と download したファイルの SHA-256 が一致することを確認します。GitHub CLI がある場合は `gh attestation verify <EXE> --repo SpecQR/LocalFileTransfer` でも provenance を検証できます。
 4. EXE を起動します。Windows Firewall が表示された場合は、信頼できる private network だけに許可します。
 5. 同じ LAN に接続した端末から QR を読み取ります。
 6. File を追加し、upload または download します。Reset すると新しいルームが作成され、古い QR は無効になります。
 
-RC.5 の実行ファイルは Authenticode 未署名です。Windows SmartScreen が警告を表示する場合があります。
+v2.0.0 の実行ファイルは Authenticode 未署名です。Windows SmartScreen が警告を表示する場合があります。現在の判断と将来の選択肢は [コード署名方針](docs/CODE_SIGNING.md) に記録しています。
 
 - x64 build: packaged launch、Utility Process recovery、clean shutdown を含む runtime smoke 済み。
 - ARM64 build: build、PE architecture、Electron fuse、static validation 済み。物理 Windows on ARM での runtime test は未実施。
@@ -112,14 +112,15 @@ docs/          Architecture、protocol、security、test、release evidence
 - [Reliability design](docs/RELIABILITY.md)
 - [Test strategy](docs/TEST_STRATEGY.md)
 - [ビルドとリリース](docs/BUILD_AND_RELEASE.md)
+- [コード署名方針](docs/CODE_SIGNING.md)
 - [Maintainer / AI agent 向け context](docs/AI_CONTEXT.md)
 - [プロジェクト言語方針](docs/PROJECT_LANGUAGE.md)
 
-## RC.5 の検証状況
+## v2.0.0 の検証状況
 
 Tag-driven release workflow は unit/integration、browser/Electron E2E、x64/ARM64 build、PE/fuse、DPI geometry、x64 packaged service recovery、dependency audit、SBOM、SHA-256、GitHub Artifact Attestation を clean Windows runner で実行します。Exact count と結果は Release に添付した machine-readable evidence を参照してください。
 
-物理 iPhone Safari、Android Chrome、Windows on ARM は release qualification の manual gate です。Automated browser profile や ARM64 static check を物理 device test として扱いません。
+共有テキスト入力時の自動ズームは、物理 iPhone SE（第2世代）と iPhone 16e の Safari で確認済みです。物理 Android と Windows on ARM の runtime は未確認です。Automated browser profile や ARM64 static check を物理 device test として扱いません。
 
 ## ライセンス
 

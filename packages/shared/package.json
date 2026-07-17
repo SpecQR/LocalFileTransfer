@@ -1,6 +1,6 @@
 {
    "name": "@nwt/shared",
-   "version": "2.0.0-rc.6",
+   "version": "2.0.0",
    "private": true,
    "type": "module",
    "exports": {

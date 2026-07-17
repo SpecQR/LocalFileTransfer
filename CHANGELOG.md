@@ -2,7 +2,15 @@
 
 公開上重要な変更をこの文書へ記録します。この repository の公開履歴は RC.2 から始まります。非公開 prototype と公開前 artifact は履歴に含めません。
 
-## Unreleased (`2.0.0-rc.6` candidate)
+## [2.0.0] - 2026-07-18
+
+### 正式公開
+
+- RC.6 で確認した転送、復旧、Shared text、compact UI の挙動を変更せず、最初の stable release として公開しました。
+- Release workflow が SemVer から prerelease / stable を判定し、stable を GitHub の Latest release として公開後に状態を再検証するようにしました。
+- Authenticode は未署名です。SHA-256、CycloneDX SBOM、GitHub build provenance / SBOM attestation を公開し、署名の採用条件を文書化しました。
+
+## [2.0.0-rc.6] - 2026-07-18
 
 ### 修正
 
@@ -67,6 +75,8 @@
 - 物理 iPhone Safari と Android Chrome: manual qualification gate として未実施。
 
 [2.0.0-rc.2]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.2
+[2.0.0]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0
+[2.0.0-rc.6]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.6
 [2.0.0-rc.5]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.5
 [2.0.0-rc.4]: https://github.com/SpecQR/LocalFileTransfer/tree/v2.0.0-rc.4
 [2.0.0-rc.3]: https://github.com/SpecQR/LocalFileTransfer/tree/v2.0.0-rc.3
