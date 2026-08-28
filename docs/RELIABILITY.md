@@ -84,7 +84,13 @@ Electron main process は Utility Process を監視し、異常終了後に上�
 
 再起動後も `localUrl` が同じなら BrowserWindow を再読み込みせず、既存 renderer の SSE/poll recovery と新しい desktop ticket で復帰します。Port が変わり `localUrl` が変化した場合だけ、新しい `/app` へ明示的に load します。これにより transfer UI state を不要に破棄せず、同じ origin への reload と window lifecycle の競合を避けます。
 
-Room、SQLite、listener を不要に作り直さず、到達可能な preferred origin が変わった場合だけ renderer の QR state を更新します。
+Room は既定で 15 分の sliding inactivity TTL と、延長できない 1 時間の hard TTL を持ちます。Electron main process は cached expiry、system resume、unlock、adapter change を契機に Room を検証します。Room がまだ有効なら同じ ID を維持し、期限切れなら Utility Process 内で古い永続状態を sweep して新しい Room を作成します。
+
+Room が変わると、main process は新しい desktop ticket を発行し、token を `safeStorage` vault へ書き、新しい Room を active state にした後で古い cookie を削除します。Refresh、file add、Reset は 1 本の lifecycle queue で直列化し、異なる Room の token、cookie、QR が混在しないようにします。
+
+Reset は old Room が active なら認証して削除し、既に expired または sweep 済みなら deletion の 404 を recovery condition として扱って新しい Room を作ります。Active Room に対する invalid token の 401 は recovery として扱いません。
+
+Production build は TTL override を受け付けません。`LFT_TEST_ROOM_TTL_MS` と `LFT_TEST_ROOM_HARD_TTL_MS` は unpackaged Electron E2E 専用で、production の期限契約を変更せず実時間の expiry recovery を検証するためだけに使用します。
 
 ## Compatibility surface
 

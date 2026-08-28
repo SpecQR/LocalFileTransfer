@@ -29,6 +29,7 @@ export interface ServiceRuntime {
 export type ServiceAction =
    | "initialize"
    | "create-room"
+   | "ensure-room"
    | "resume-room"
    | "issue-ticket"
    | "add-files"

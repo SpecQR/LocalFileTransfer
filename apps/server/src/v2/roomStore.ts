@@ -252,6 +252,36 @@ export class RoomStore {
       return room;
    }
 
+   async ensureRoom(roomId: string, token: string, appBaseUrl: string): Promise<CreatedRoom> {
+      try {
+         return {
+            room: this.resumeRoom(roomId, token, appBaseUrl),
+            token
+         };
+      } catch (error: unknown) {
+         if (!(error instanceof RoomError) || error.statusCode !== 404) {
+            throw error;
+         }
+      }
+
+      await this.sweepExpired();
+      return this.createRoom(appBaseUrl);
+   }
+
+   async replaceRoom(roomId: string, token: string, appBaseUrl: string): Promise<CreatedRoom> {
+      try {
+         await this.deleteRoom(roomId, token);
+      } catch (error: unknown) {
+         if (!(error instanceof RoomError) || error.statusCode !== 404) {
+            throw error;
+         }
+
+         await this.sweepExpired();
+      }
+
+      return this.createRoom(appBaseUrl);
+   }
+
    requireAuthorized(roomId: string, credential: RoomCredential): PersistedRoom {
       const room = this.requireActive(roomId);
       const tokenAuthorized = Boolean(

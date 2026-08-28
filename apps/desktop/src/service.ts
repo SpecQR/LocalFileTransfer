@@ -111,6 +111,16 @@ async function execute(action: ServiceAction, payload: unknown): Promise<unknown
 
          return roomResult(created.room.roomId, created.token, created.room.expiresAt);
       }
+      case "ensure-room": {
+         const record = requireRecord(payload);
+         const ensured = await activeRooms.ensureRoom(
+            parseRoomId(record.roomId),
+            parseRoomToken(record.token),
+            requireString(record.appBaseUrl, "appBaseUrl")
+         );
+
+         return roomResult(ensured.room.roomId, ensured.token, ensured.room.expiresAt);
+      }
       case "resume-room": {
          const record = requireRecord(payload);
          const room = activeRooms.resumeRoom(
@@ -149,8 +159,7 @@ async function execute(action: ServiceAction, payload: unknown): Promise<unknown
          const token = parseRoomToken(record.token);
          const appBaseUrl = requireString(record.appBaseUrl, "appBaseUrl");
 
-         await activeRooms.deleteRoom(roomId, token);
-         const created = await activeRooms.createRoom(appBaseUrl);
+         const created = await activeRooms.replaceRoom(roomId, token, appBaseUrl);
 
          return roomResult(created.room.roomId, created.token, created.room.expiresAt);
       }
@@ -406,6 +415,7 @@ function parseRequest(value: unknown): ServiceRequest {
    const actions: ReadonlySet<string> = new Set([
       "initialize",
       "create-room",
+      "ensure-room",
       "resume-room",
       "issue-ticket",
       "add-files",

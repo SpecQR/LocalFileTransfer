@@ -23,6 +23,8 @@ Public evidence に personal file name、network name、local path、QR screensh
 - [ ] Network 不一致または unreachable adapter で有用な diagnostics が表示される。
 - [ ] Reset で old page が無効になり、異なる QR が表示される。
 - [ ] 撮影した old QR は reset または expiry 後に使用できない。
+- [ ] App を起動したまま 1 時間を超えて放置しても、再起動なしで異なる QR へ自動更新され、その QR から参加できる。
+- [ ] iOS を lock したまま Room が期限切れになった後でも、Reset が失敗せず新しい QR を発行し、その Room へ参加できる。
 
 ## 3. Browser から Windows への upload
 

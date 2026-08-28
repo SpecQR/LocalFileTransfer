@@ -2,15 +2,15 @@
 
 ## 現在の状態
 
-Local File Transfer 2.0.0 の Windows Portable EXE は Authenticode 未署名です。Release には、実体確認用の SHA-256、CycloneDX SBOM、GitHub build provenance / SBOM attestation を添付します。
+Local File Transfer 2.0.1 の Windows Portable EXE は Authenticode 未署名です。Release には、実体確認用の SHA-256、CycloneDX SBOM、GitHub build provenance / SBOM attestation を添付します。
 
 GitHub Artifact Attestation は、artifact と repository、workflow、source commit の来歴を確認するものです。Windows publisher identity を証明する Authenticode の代替ではありません。
 
 自己署名 certificate は、公開ユーザーの Windows では既定で信頼されません。開発用 certificate を付けて「署名済み」に見せることはせず、未署名である事実を UI 外の公開文書と release evidence に明記します。
 
-## 2.0.0 の判断
+## 2.0.x の判断
 
-2.0.0 は未署名のまま公開します。理由は次のとおりです。
+2.0.x は未署名のまま公開します。理由は次のとおりです。
 
 - Portable-only の小さな配布体験を維持する。
 - Certificate、外部署名 account、審査前の仮実装を release secret に追加しない。

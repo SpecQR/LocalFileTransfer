@@ -56,11 +56,11 @@ npm run dist:windows
 npm run dist:windows:arm64
 ```
 
-2.0.0:
+Current package version:
 
 ```text
-Local.File.Transfer-2.0.0-x64-Portable.exe
-Local.File.Transfer-2.0.0-arm64-Portable.exe
+Local.File.Transfer-<version>-x64-Portable.exe
+Local.File.Transfer-<version>-arm64-Portable.exe
 ```
 
 Executable は Git に commit せず、GitHub Release asset としてだけ公開します。
@@ -149,8 +149,8 @@ Release tooling は PowerShell module に依存せず、Node.js で SHA-256 を�
 Download 後の検証:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath .\Local.File.Transfer-2.0.0-x64-Portable.exe
-gh attestation verify .\Local.File.Transfer-2.0.0-x64-Portable.exe --repo SpecQR/LocalFileTransfer
+Get-FileHash -Algorithm SHA256 -LiteralPath .\Local.File.Transfer-<version>-x64-Portable.exe
+gh attestation verify .\Local.File.Transfer-<version>-x64-Portable.exe --repo SpecQR/LocalFileTransfer
 ```
 
 GitHub CLI を使用しない場合も、`SHA256SUMS.txt` と EXE の SHA-256 は照合できます。
@@ -158,7 +158,7 @@ GitHub CLI を使用しない場合も、`SHA256SUMS.txt` と EXE の SHA-256 �
 ## Tag と publication
 
 1. Source、test、文書、version を review する。
-2. `main` の reviewed commit に annotated tag `v2.0.0` を付ける。
+2. `main` の reviewed commit に annotated tag `v<version>` を付ける。
 3. Tag を push する。
 4. `Windows release` workflow が全 gate を clean runner で再実行する。
 5. Workflow が artifact を attest し、version に対応する prerelease または stable Release draft を作成する。

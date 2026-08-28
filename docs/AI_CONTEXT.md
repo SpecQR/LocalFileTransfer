@@ -18,6 +18,7 @@ Local File Transfer は、Windows 上で一時的な双方向 transfer room を 
 8. Browser upload progress は queued byte ではなく durably confirmed byte を表す。
 9. Large data は stream または checkpoint で扱い、全 file を memory に保持しない。
 10. Security と validation の claim は evidence と正確に一致させる。
+11. Expired Room を Electron main process の active state に残さない。期限到達後はアプリ再起動を要求せず、新しい Room、QR、ticket、vault record へ一貫して切り替える。
 
 ## 固定した技術判断
 
@@ -35,7 +36,7 @@ Local File Transfer は、Windows 上で一時的な双方向 transfer room を 
 
 ### `apps/desktop`
 
-- `main.ts`: BrowserWindow policy、single instance、native dialog、`safeStorage`、power-save blocker、Utility Process supervision、window geometry
+- `main.ts`: BrowserWindow policy、single instance、native dialog、`safeStorage`、power-save blocker、Utility Process supervision、Room lifecycle queue、expiry rotation、window geometry
 - `preload.ts`: narrow renderer API
 - `service.ts`: Utility Process bootstrap と typed command dispatch
 - `serviceProtocol.ts`: process-message validation contract
@@ -53,11 +54,11 @@ Local File Transfer は、Windows 上で一時的な双方向 transfer room を 
 - `security/`: request/connection limit
 - `observability/`: redacted rotating log
 
-`local/` implementation と regression test は legacy behavior の監査用に残っていますが、2.0.0 の default runtime は register しません。`buildApp({ enableLegacyRoutes: true })` は test fixture 専用 opt-in です。旧 `PUT .../chunks` public route は削除済みで、current upload は `HEAD` + `PATCH` だけです。
+`local/` implementation と regression test は legacy behavior の監査用に残っていますが、2.x の default runtime は register しません。`buildApp({ enableLegacyRoutes: true })` は test fixture 専用 opt-in です。旧 `PUT .../chunks` public route は削除済みで、current upload は `HEAD` + `PATCH` だけです。
 
 ### `apps/web`
 
-- `TransferRoomPage.tsx`: 2.0.0 の canonical room UI、queue orchestration、failure-only reconnect state
+- `TransferRoomPage.tsx`: 2.x の canonical room UI、queue orchestration、failure-only reconnect state
 - `roomClient.ts`: authorization、SSE、resumable upload、download、Shared text
 - `uploadSource.ts`: mobile file-provider materialization。Large iPhone image regression の修正箇所を含む
 - `resumeStore.ts`: secret を含まない IndexedDB/localStorage resume metadata
@@ -135,15 +136,16 @@ Hostile-network confidentiality を本当に提供するには、local service �
 
 ## Current release truth
 
-- Version/tag: `2.0.0` / `v2.0.0`
+- Version/tag: `2.0.1` / `v2.0.1`
 - License: MIT、copyright SpecQR contributors
 - x64 Portable: unsigned、packaged runtime/service-recovery smoke required
 - ARM64 Portable: unsigned、build/PE/fuse/static check required、physical runtime 未実施
 - Tag workflow: clean build、SBOM、SHA-256、GitHub build provenance/SBOM attestation
 - Physical iPhone SE（第2世代）と iPhone 16e Safari: Shared text focus zoom を確認済み
+- Physical iPhone Safari: 長時間接続後の Room 再作成と新 Room への再参加を確認済み
 - Physical Android Chrome、Windows on ARM runtime: manual qualification 未実施
 
-Exact automated count と artifact hash は v2.0.0 release evidence から読むこと。未実施の check を positive claim に変更せず、Artifact が変わった場合は hash、evidence、attestation を再生成します。
+Exact automated count と artifact hash は v2.0.1 release evidence から読むこと。未実施の check を positive claim に変更せず、Artifact が変わった場合は hash、evidence、attestation を再生成します。
 
 ## よくある誤り
 
@@ -163,6 +165,12 @@ Exact automated count と artifact hash は v2.0.0 release evidence から読む
 ### Transfer または persistence
 
 Protocol parser と repository migration、room state、route、client、UI の順で変更します。Unit/fault integration coverage を追加し、all tests、E2E、packaged recovery、audit、evidence generation を実行します。Durability 変更は [RELIABILITY.md](RELIABILITY.md) の ACK invariant と fault boundary を更新します。
+
+### Room lifecycle
+
+Sliding TTL は 15 分、hard TTL は 1 時間を既定値として維持します。Desktop の cached expiry 到達時は `ensure-room` を呼び、有効なら同じ Room を resume し、404 の expired/missing だけを新規作成へ切り替えます。Active Room の 401 を飲み込んではいけません。
+
+Reset、network refresh、system resume が競合しないこと、Room 変更時に desktop ticket、vault、active state、old cookie が一貫して切り替わることを確認します。RoomStore の fake clock unit test と、unpackaged Electron の短縮 TTL E2E を両方更新します。Test-only TTL environment variable を packaged build で有効にしてはいけません。
 
 ### UI geometry
 

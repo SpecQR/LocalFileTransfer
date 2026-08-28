@@ -67,11 +67,19 @@ let manualContentHeight: number | undefined;
 let isQuitting = false;
 let restartPromise: Promise<void> | undefined;
 let networkRefreshPromise: Promise<void> | undefined;
+let roomLifecycleTail: Promise<void> = Promise.resolve();
 let activeRoomOrigin: string | undefined;
 let powerSaveBlockerId: number | undefined;
 let serviceLaunchCount = 0;
 let rendererTransferActive = false;
 let serviceTransferActive = false;
+
+function enqueueRoomLifecycle<T>(operation: () => Promise<T>): Promise<T> {
+   const result = roomLifecycleTail.then(operation, operation);
+
+   roomLifecycleTail = result.then(() => undefined, () => undefined);
+   return result;
+}
 
 interface DesktopFileInput {
    path: string;
@@ -195,6 +203,12 @@ async function ensureService(): Promise<ServiceRuntime> {
 }
 
 async function ensureActiveRoom(runtime: ServiceRuntime): Promise<ServiceRoomResult> {
+   return enqueueRoomLifecycle(() => ensureActiveRoomNow(runtime));
+}
+
+async function ensureActiveRoomNow(
+   runtime: ServiceRuntime
+): Promise<ServiceRoomResult> {
    const client = requireService();
    const appBaseUrl = preferredLanOrigin(runtime);
    const saved = await readVault();
@@ -202,7 +216,7 @@ async function ensureActiveRoom(runtime: ServiceRuntime): Promise<ServiceRoomRes
 
    if (saved) {
       try {
-         room = await client.request<ServiceRoomResult>("resume-room", {
+         room = await client.request<ServiceRoomResult>("ensure-room", {
             roomId: saved.roomId,
             token: saved.token,
             appBaseUrl
@@ -218,11 +232,7 @@ async function ensureActiveRoom(runtime: ServiceRuntime): Promise<ServiceRoomRes
       });
    }
 
-   activeRoom = room;
-   activeRoomOrigin = appBaseUrl;
-   await writeVault(room);
-   await installDesktopTicket(room, runtime);
-
+   await activateRoom(room, runtime, appBaseUrl);
    return room;
 }
 
@@ -243,6 +253,30 @@ async function installDesktopTicket(room: ServiceRoomResult, runtime: ServiceRun
    });
 }
 
+async function activateRoom(
+   room: ServiceRoomResult,
+   runtime: ServiceRuntime,
+   origin: string
+): Promise<void> {
+   const previousRoomId = activeRoom?.roomId;
+
+   await installDesktopTicket(room, runtime);
+   await writeVault(room);
+
+   activeRoom = room;
+   activeRoomOrigin = origin;
+
+   if (!previousRoomId || previousRoomId === room.roomId) {
+      return;
+   }
+
+   try {
+      await session.defaultSession.cookies.remove(runtime.localUrl, roomCookieName(previousRoomId));
+   } catch (error: unknown) {
+      console.warn("Could not remove the previous room ticket", error);
+   }
+}
+
 function roomBootstrap(): DesktopRoomBootstrap {
    const runtime = requireRuntime();
    const room = requireActiveRoom();
@@ -259,7 +293,7 @@ async function refreshNetworkRoom(): Promise<void> {
       return networkRefreshPromise;
    }
 
-   networkRefreshPromise = (async () => {
+   const refresh = enqueueRoomLifecycle(async () => {
       const currentRoom = activeRoom;
       const latest = await requireService().request<ServiceRuntime>("network-status");
       const nextOrigin = preferredLanOrigin(latest);
@@ -274,22 +308,44 @@ async function refreshNetworkRoom(): Promise<void> {
          || diagnostics.transferringItems > 0
       );
 
-      if (currentRoom && activeRoomOrigin !== nextOrigin) {
-         const resumed = await requireService().request<ServiceRoomResult>("resume-room", {
-            roomId: currentRoom.roomId,
-            token: currentRoom.token,
+      if (!currentRoom) {
+         const created = await requireService().request<ServiceRoomResult>("create-room", {
             appBaseUrl: nextOrigin
          });
 
-         activeRoom = resumed;
-         activeRoomOrigin = nextOrigin;
-         await writeVault(resumed);
+         await activateRoom(created, latest, nextOrigin);
+         return;
       }
-   })().finally(() => {
-      networkRefreshPromise = undefined;
+
+      const shouldEnsureRoom = activeRoomOrigin !== nextOrigin
+         || currentRoom.expiresAt <= Date.now();
+
+      if (!shouldEnsureRoom) {
+         return;
+      }
+
+      const ensured = await requireService().request<ServiceRoomResult>("ensure-room", {
+         roomId: currentRoom.roomId,
+         token: currentRoom.token,
+         appBaseUrl: nextOrigin
+      });
+
+      if (ensured.roomId !== currentRoom.roomId) {
+         console.info("The expired transfer room was replaced automatically");
+      }
+
+      await activateRoom(ensured, latest, nextOrigin);
    });
 
-   return networkRefreshPromise;
+   networkRefreshPromise = refresh;
+
+   try {
+      await refresh;
+   } finally {
+      if (networkRefreshPromise === refresh) {
+         networkRefreshPromise = undefined;
+      }
+   }
 }
 
 function refreshAfterSystemResume(): void {
@@ -330,6 +386,7 @@ function updatePowerSaveBlocker(): void {
    powerSaveBlockerId = undefined;
 }
 async function addRoomFiles(value: unknown): Promise<unknown> {
+   await refreshNetworkRoom();
    const room = requireActiveRoom();
    const rawFiles = Array.isArray(value) ? value : [];
    const parsed = parseDesktopSourceFiles(rawFiles);
@@ -363,20 +420,19 @@ async function validateDesktopFile(file: DesktopSourceFile): Promise<DesktopSour
 }
 
 async function resetActiveRoom(): Promise<DesktopRoomBootstrap> {
-   const room = requireActiveRoom();
-   const runtime = requireRuntime();
-   const next = await requireService().request<ServiceRoomResult>("reset-room", {
-      roomId: room.roomId,
-      token: room.token,
-      appBaseUrl: preferredLanOrigin(runtime)
+   return enqueueRoomLifecycle(async () => {
+      const room = requireActiveRoom();
+      const runtime = requireRuntime();
+      const origin = preferredLanOrigin(runtime);
+      const next = await requireService().request<ServiceRoomResult>("reset-room", {
+         roomId: room.roomId,
+         token: room.token,
+         appBaseUrl: origin
+      });
+
+      await activateRoom(next, runtime, origin);
+      return roomBootstrap();
    });
-
-   activeRoom = next;
-   activeRoomOrigin = preferredLanOrigin(runtime);
-   await writeVault(next);
-   await installDesktopTicket(next, runtime);
-
-   return roomBootstrap();
 }
 
 function scheduleServiceRecovery(): void {
@@ -418,6 +474,13 @@ function scheduleServiceRecovery(): void {
 }
 
 function serviceInitPayload(serviceRestarts: number): ServiceInitPayload {
+   const ttlMs = testRoomDuration("LFT_TEST_ROOM_TTL_MS", 15 * 60 * 1000);
+   const hardTtlMs = testRoomDuration("LFT_TEST_ROOM_HARD_TTL_MS", 60 * 60 * 1000);
+
+   if (hardTtlMs < ttlMs) {
+      throw new Error("The test room hard TTL must be at least the room TTL");
+   }
+
    return {
       version: app.getVersion(),
       serviceRestarts,
@@ -426,8 +489,8 @@ function serviceInitPayload(serviceRestarts: number): ServiceInitPayload {
       storageDir: process.env.LFT_STORAGE_DIR ?? join(app.getPath("userData"), "transfers-v2"),
       receiveDir: process.env.LFT_RECEIVE_DIR ?? join(app.getPath("downloads"), appName),
       staticRoot: webStaticRoot(),
-      ttlMs: 15 * 60 * 1000,
-      hardTtlMs: 60 * 60 * 1000,
+      ttlMs,
+      hardTtlMs,
       limits: {
          maxFiles: 100,
          maxFileSize: 4 * 1024 * 1024 * 1024,
@@ -435,6 +498,26 @@ function serviceInitPayload(serviceRestarts: number): ServiceInitPayload {
          uploadChunkSize
       }
    };
+}
+
+function testRoomDuration(name: string, fallback: number): number {
+   if (app.isPackaged) {
+      return fallback;
+   }
+
+   const raw = process.env[name];
+
+   if (raw === undefined) {
+      return fallback;
+   }
+
+   const value = Number(raw);
+
+   if (!Number.isSafeInteger(value) || value < 1_000) {
+      throw new Error(`${name} must be an integer of at least 1000 milliseconds`);
+   }
+
+   return value;
 }
 
 function preferredLanOrigin(runtime: ServiceRuntime): string {

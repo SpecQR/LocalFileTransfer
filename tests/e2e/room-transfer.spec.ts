@@ -2,7 +2,8 @@ import {
    _electron as electron,
    expect,
    test,
-   type ElectronApplication
+   type ElectronApplication,
+   type Page
 } from "@playwright/test";
 import { createHash } from "node:crypto";
 import {
@@ -267,7 +268,7 @@ test("one QR room transfers both ways and keeps the compact desktop layout stabl
          await desktopInput.setInputFiles(fixture.path);
          await expect(desktopPage.locator(".room-item")).toHaveCount(index + 1);
          await expect(page.locator(".room-item")).toHaveCount(index + 1);
-         await desktopPage.waitForTimeout(150);
+         await waitForDesktopResize(desktopPage, electronApp);
          heights.push((await contentSize(electronApp))[1]);
       }
 
@@ -433,6 +434,122 @@ test("one QR room transfers both ways and keeps the compact desktop layout stabl
    }
 });
 
+test("expired rooms rotate and the replacement QR connects without restarting", async ({
+   browserName,
+   page
+}) => {
+   const executablePath = await ensureLocalElectron();
+   const runRoot = await mkdtemp(join(tmpdir(), `lft-expiry-e2e-${browserName}-`));
+   const userData = join(runRoot, "user-data");
+   const storageDir = join(runRoot, "storage");
+   const receiveDir = join(runRoot, "received");
+
+   await Promise.all([
+      mkdir(userData, { recursive: true }),
+      mkdir(storageDir, { recursive: true }),
+      mkdir(receiveDir, { recursive: true })
+   ]);
+
+   let electronApp: ElectronApplication | undefined;
+
+   try {
+      electronApp = await electron.launch({
+         executablePath,
+         args: [
+            desktopRoot,
+            "--lang=en-US",
+            `--user-data-dir=${userData}`
+         ],
+         cwd: desktopRoot,
+         env: {
+            ...process.env,
+            LFT_STORAGE_DIR: storageDir,
+            LFT_RECEIVE_DIR: receiveDir,
+            LFT_TEST_ROOM_TTL_MS: "3000",
+            LFT_TEST_ROOM_HARD_TTL_MS: "5000"
+         },
+         timeout: 60_000
+      });
+
+      const desktopPage = await electronApp.firstWindow();
+
+      await expect(desktopPage.locator(".room-desktop")).toBeVisible();
+      const initial = await desktopBootstrap(desktopPage);
+
+      await expect.poll(async () => (await desktopBootstrap(desktopPage)).roomId, {
+         intervals: [250, 500, 1_000],
+         timeout: 15_000
+      }).not.toBe(initial.roomId);
+
+      const rotated = await desktopBootstrap(desktopPage);
+
+      expect(rotated.roomId).not.toBe(initial.roomId);
+      expect(rotated.joinUrl).not.toBe(initial.joinUrl);
+
+      const rotatedUrl = loopbackJoinUrl(rotated.joinUrl);
+
+      await page.goto(rotatedUrl);
+      await expect(page.locator(".room-mobile")).toBeVisible();
+      await expect.poll(() => authorizedRoomStatus(page, rotated.roomId), {
+         timeout: 15_000
+      }).toBe(200);
+
+      const reset = await desktopPage.evaluate<DesktopBootstrap>(async () => {
+         const host = globalThis as unknown as {
+            localFileTransfer: {
+               resetRoom(): Promise<DesktopBootstrap>;
+            };
+         };
+
+         return host.localFileTransfer.resetRoom();
+      });
+
+      expect(reset.roomId).not.toBe(rotated.roomId);
+      expect(reset.joinUrl).not.toBe(rotated.joinUrl);
+
+      await page.goto(loopbackJoinUrl(reset.joinUrl));
+      await expect.poll(() => authorizedRoomStatus(page, reset.roomId), {
+         timeout: 15_000
+      }).toBe(200);
+   } finally {
+      await electronApp?.close().catch(() => undefined);
+      await rm(runRoot, {
+         force: true,
+         recursive: true
+      });
+   }
+});
+
+async function desktopBootstrap(page: Page): Promise<DesktopBootstrap> {
+   return page.evaluate<DesktopBootstrap>(async () => {
+      const host = globalThis as unknown as {
+         localFileTransfer: {
+            roomBootstrap(): Promise<DesktopBootstrap>;
+         };
+      };
+
+      return host.localFileTransfer.roomBootstrap();
+   });
+}
+
+function loopbackJoinUrl(value: string): string {
+   const url = new URL(value);
+
+   url.hostname = "127.0.0.1";
+   return url.toString();
+}
+
+async function authorizedRoomStatus(
+   page: Page,
+   roomId: string
+): Promise<number> {
+   return page.evaluate(async (value) => {
+      const response = await fetch(`/api/v2/rooms/${encodeURIComponent(value)}`);
+
+      return response.status;
+   }, roomId);
+}
+
 async function ensureLocalElectron(): Promise<string> {
    const packageJson = JSON.parse(
       await readFile(join(electronPackageRoot, "package.json"), "utf8")
@@ -464,6 +581,22 @@ async function contentSize(app: ElectronApplication): Promise<[number, number]> 
 
       return window ? window.getContentSize() : [0, 0];
    }) as Promise<[number, number]>;
+}
+
+async function waitForDesktopResize(page: Page, app: ElectronApplication): Promise<void> {
+   await expect.poll(async () => {
+      const desiredHeight = await page.locator(".room-desktop").evaluate((element) => {
+         const shell = element as HTMLElement;
+
+         return Math.ceil(Math.max(shell.scrollHeight, shell.getBoundingClientRect().height));
+      });
+      const [, actualHeight] = await contentSize(app);
+
+      return Math.abs(actualHeight - desiredHeight);
+   }, {
+      intervals: [50, 100, 250],
+      timeout: 5_000
+   }).toBeLessThanOrEqual(1);
 }
 
 async function createOutboundFixtures(directory: string): Promise<Array<{

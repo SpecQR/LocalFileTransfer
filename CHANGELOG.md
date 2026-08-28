@@ -4,10 +4,26 @@
 
 ## Unreleased
 
+現時点で未公開の変更はありません。
+
+## [2.0.1] - 2026-08-29
+
+### 修正
+
+- 15 分の無通信期限または 1 時間の絶対期限を過ぎた Room を Electron main process が保持し続け、アプリを再起動するまで新しい QR に接続できなくなる問題を修正しました。
+- 期限切れまたは既に削除された Room に対する Reset を再実行可能にし、古い Room の削除結果にかかわらず新しい Room を作成できるようにしました。有効な Room に誤った token が指定された場合は従来どおり拒否します。
+- Room、QR、desktop ticket、暗号化済み vault の切り替えを直列化し、復帰、期限更新、Reset が重なっても部分的な状態が残らないようにしました。
+- 短縮した実期限を使う Electron E2E を追加し、Android Chromium と iPhone WebKit の両方で、自動 Room 更新、新 QR への参加、続く Reset を検証します。
+
+### 実機確認
+
+- 物理 iPhone の Safari で長時間接続した後も、アプリを再起動せず Room の再作成と新しい Room への再接続ができることを確認しました。
+
 ### Release engineering
 
 - Stable release の `Latest` 指定を draft 作成時ではなく、検証済み draft の公開時だけ付与するよう修正しました。
 - 全 `electron-builder` release script に `--publish never` を設定し、GitHub Release asset は全 gate と staging の完了後に workflow が明示的に upload するよう固定しました。
+- 公開直前の dependency audit で検出した high severity advisory に対応し、server / desktop の `find-my-way` と `fast-uri`、web build chain の `nanoid` と `postcss`、desktop build chain の `electron-builder` と関連 dependency を修正版へ更新しました。
 
 ## [2.0.0] - 2026-07-18
 
@@ -82,6 +98,7 @@
 - 物理 iPhone Safari と Android Chrome: manual qualification gate として未実施。
 
 [2.0.0-rc.2]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.2
+[2.0.1]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.1
 [2.0.0]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0
 [2.0.0-rc.6]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.6
 [2.0.0-rc.5]: https://github.com/SpecQR/LocalFileTransfer/releases/tag/v2.0.0-rc.5
