@@ -169,15 +169,29 @@ jobs:
               $assets = @(Get-ChildItem -LiteralPath $releaseDirectory -File | ForEach-Object FullName)
               $title = "Local File Transfer $env:LFT_VERSION"
               $isPrerelease = $env:LFT_IS_PRERELEASE -eq "true"
-              $draftChannelArgs = if ($isPrerelease) {
-                 @("--prerelease")
+
+              $draftMetadataArgs = @(
+                 "release", "edit", $env:LFT_RELEASE_TAG,
+                 "--repo", $env:GITHUB_REPOSITORY,
+                 "--title", $title,
+                 "--notes-file", $notes
+              )
+              if ($isPrerelease) {
+                 $draftMetadataArgs += "--prerelease"
               } else {
-                 @("--prerelease=false")
+                 $draftMetadataArgs += "--prerelease=false"
               }
-              $publishChannelArgs = if ($isPrerelease) {
-                 @("--prerelease")
-              } else {
-                 @("--prerelease=false", "--latest")
+
+              $createArgs = @(
+                 "release", "create", $env:LFT_RELEASE_TAG,
+                 "--repo", $env:GITHUB_REPOSITORY,
+                 "--title", $title,
+                 "--notes-file", $notes,
+                 "--draft",
+                 "--verify-tag"
+              )
+              if ($isPrerelease) {
+                 $createArgs += "--prerelease"
               }
 
               $existingReleaseJson = gh release view $env:LFT_RELEASE_TAG `
@@ -188,37 +202,41 @@ jobs:
                  if (-not $existingRelease.isDraft) {
                     throw "Release is already published; refusing to mutate immutable assets"
                  }
-                 gh release edit $env:LFT_RELEASE_TAG `
-                    --repo $env:GITHUB_REPOSITORY `
-                    --title $title `
-                    --notes-file $notes `
-                    @draftChannelArgs
+
+                 & gh @draftMetadataArgs
                  if ($LASTEXITCODE -ne 0) {
                     throw "Failed to update the draft release metadata"
                  }
-                 gh release upload $env:LFT_RELEASE_TAG @assets `
-                    --repo $env:GITHUB_REPOSITORY `
-                    --clobber
-                 if ($LASTEXITCODE -ne 0) {
-                    throw "Failed to upload the draft prerelease assets"
-                 }
               } else {
-                 gh release create $env:LFT_RELEASE_TAG @assets `
-                    --repo $env:GITHUB_REPOSITORY `
-                    --title $title `
-                    --notes-file $notes `
-                    --draft `
-                    --verify-tag `
-                    @draftChannelArgs
+                 & gh @createArgs
                  if ($LASTEXITCODE -ne 0) {
                     throw "Failed to create the draft release"
                  }
               }
 
-              gh release edit $env:LFT_RELEASE_TAG `
-                 --repo $env:GITHUB_REPOSITORY `
-                 --draft=false `
-                 @publishChannelArgs
+              $uploadArgs = @(
+                 "release", "upload", $env:LFT_RELEASE_TAG,
+                 "--repo", $env:GITHUB_REPOSITORY,
+                 "--clobber"
+              )
+              $uploadArgs += $assets
+              & gh @uploadArgs
+              if ($LASTEXITCODE -ne 0) {
+                 throw "Failed to upload the draft release assets"
+              }
+
+              $publishArgs = @(
+                 "release", "edit", $env:LFT_RELEASE_TAG,
+                 "--repo", $env:GITHUB_REPOSITORY,
+                 "--draft=false"
+              )
+              if ($isPrerelease) {
+                 $publishArgs += "--prerelease"
+              } else {
+                 $publishArgs += @("--prerelease=false", "--latest")
+              }
+
+              & gh @publishArgs
               if ($LASTEXITCODE -ne 0) {
                  throw "Failed to publish the verified release"
               }

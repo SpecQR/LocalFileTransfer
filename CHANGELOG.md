@@ -4,7 +4,10 @@
 
 ## Unreleased
 
-現時点で未公開の変更はありません。
+### Release engineering
+
+- GitHub CLI に Release asset とオプションを同時展開した際、PowerShell の native argument binding により stable release 作成が失敗し得る問題を修正しました。
+- Release 公開処理を、assetless draft の作成または更新、asset upload、検証済み draft の公開という独立した段階へ分け、引数配列と処理順序を回帰テストで固定しました。
 
 ## [2.0.1] - 2026-08-29
 

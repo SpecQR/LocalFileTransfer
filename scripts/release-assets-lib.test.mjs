@@ -256,26 +256,35 @@ test("release workflow publishes RC and stable channels only after draft assets 
    const workflowSource = readFileSync(workflowPath, "utf8");
 
    assert.match(workflowSource, /LFT_IS_PRERELEASE/u);
-   assert.match(workflowSource, /\$draftChannelArgs = if \(\$isPrerelease\)/u);
-   assert.match(workflowSource, /\$publishChannelArgs = if \(\$isPrerelease\)/u);
+   assert.match(workflowSource, /\$draftMetadataArgs = @\(/u);
+   assert.match(workflowSource, /\$createArgs = @\(/u);
+   assert.match(workflowSource, /\$uploadArgs = @\(/u);
+   assert.match(workflowSource, /\$publishArgs = @\(/u);
    assert.match(
       workflowSource,
-      /\$draftChannelArgs[\s\S]*?@\("--prerelease=false"\)/u
+      /\$draftMetadataArgs \+= "--prerelease=false"/u
    );
    assert.match(
       workflowSource,
-      /\$publishChannelArgs[\s\S]*?@\("--prerelease=false", "--latest"\)/u
+      /\$publishArgs \+= @\("--prerelease=false", "--latest"\)/u
    );
-   assert.match(workflowSource, /--draft `/u);
-   assert.match(workflowSource, /--draft=false `/u);
-   assert.match(
+   assert.match(workflowSource, /& gh @draftMetadataArgs/u);
+   assert.match(workflowSource, /& gh @createArgs/u);
+   assert.match(workflowSource, /\$uploadArgs \+= \$assets/u);
+   assert.match(workflowSource, /& gh @uploadArgs/u);
+   assert.match(workflowSource, /& gh @publishArgs/u);
+   assert.doesNotMatch(
       workflowSource,
-      /--draft `[\s\S]*?--verify-tag `[\s\S]*?@draftChannelArgs/u
+      /gh release create \$env:LFT_RELEASE_TAG @assets/u
    );
-   assert.match(
-      workflowSource,
-      /--draft=false `\r?\n\s+@publishChannelArgs/u
-   );
+
+   const createIndex = workflowSource.indexOf("& gh @createArgs");
+   const uploadIndex = workflowSource.indexOf("$uploadArgs += $assets");
+   const publishIndex = workflowSource.indexOf("& gh @publishArgs");
+
+   assert.ok(createIndex >= 0);
+   assert.ok(createIndex < uploadIndex);
+   assert.ok(uploadIndex < publishIndex);
    assert.match(
       workflowSource,
       /--json tagName,isDraft,isPrerelease,publishedAt,assets,url/u
