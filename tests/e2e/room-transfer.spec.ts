@@ -6,6 +6,7 @@ import {
    type Page
 } from "@playwright/test";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import {
    access,
    cp,
@@ -23,6 +24,7 @@ import { fileURLToPath } from "node:url";
 const repositoryRoot = process.env.LFT_REPOSITORY_ROOT ?? resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const desktopRoot = join(repositoryRoot, "apps", "desktop");
 const electronPackageRoot = join(desktopRoot, "node_modules", "electron");
+const decodeQr = createRequire(import.meta.url)("jsqr") as typeof import("jsqr").default;
 
 interface DesktopBootstrap {
    roomId: string;
@@ -121,7 +123,48 @@ test("one QR room transfers both ways and keeps the compact desktop layout stabl
 
          return host.localFileTransfer.roomBootstrap();
       });
-      const joinUrl = new URL(bootstrap.joinUrl);
+      const qr = desktopPage.locator(".room-qr-square svg");
+
+      await expect(qr).toBeVisible();
+      const qrInput = await qr.evaluate((element) => {
+         const bounds = element.getBoundingClientRect();
+
+         return {
+            svg: element.outerHTML,
+            width: Math.round(bounds.width),
+            height: Math.round(bounds.height)
+         };
+      });
+      // Rasterize the actual application SVG in each mobile browser engine.
+      const pixels = await page.evaluate(async ({ svg, width, height }) => {
+         const image = new Image();
+
+         image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+         await image.decode();
+         const canvas = document.createElement("canvas");
+
+         canvas.width = width;
+         canvas.height = height;
+         const context = canvas.getContext("2d");
+
+         if (!context) {
+            throw new Error("QR rasterization context is unavailable");
+         }
+
+         context.drawImage(image, 0, 0, width, height);
+         return Array.from(context.getImageData(0, 0, width, height).data);
+      }, qrInput);
+      const decoded = decodeQr(
+         Uint8ClampedArray.from(pixels),
+         qrInput.width,
+         qrInput.height,
+         { inversionAttempts: "dontInvert" }
+      );
+
+      // Compare booleans so a failed assertion cannot print the live capability.
+      expect(decoded !== null, "The rendered QR must decode").toBe(true);
+      expect(decoded?.data === bootstrap.joinUrl, "The decoded room URL must match").toBe(true);
+      const joinUrl = new URL(decoded!.data);
 
       joinUrl.hostname = "127.0.0.1";
       await page.goto(joinUrl.toString());

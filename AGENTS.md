@@ -10,7 +10,7 @@
 - Capability、cookie、Shared text、file content、完全な source path を log に記録しない。
 - Electron renderer の isolation、sandbox、navigation denial、permission denial、IPC validation、hardened fuse を維持する。
 - Large file は streaming または resumable checkpoint で扱い、全体を memory に buffer しない。
-- 明示的な compatibility review なしに `specqr` の exact pin `2.4.0` を変更しない。
+- 明示的な compatibility review なしに `specqr` の exact pin `3.0.0-rc.2` を変更しない。RC 採用の判断と検証範囲は `docs/SPECQR_INTEGRATION.md` に記録する。
 - Application code は TypeScript、indent は 3 spaces とする。
 - Security claim と verification claim は、実際の evidence より強く書かない。
 

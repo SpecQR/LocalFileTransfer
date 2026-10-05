@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const rootManifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 const publicVersion = rootManifest.version;
+const reviewedSpecqrVersion = "3.0.0-rc.2";
 const skippedDirectories = new Set([
    ".git",
    ".data",
@@ -95,7 +96,7 @@ if (problems.length > 0) {
       root: ".",
       filesScanned: files.length,
       version: publicVersion,
-      specqr: "2.4.0",
+      specqr: reviewedSpecqrVersion,
       result: "pass"
    }, null, 3) + "\n");
 }
@@ -194,8 +195,8 @@ async function inspectManifest() {
    if (rootManifest.repository?.url !== "https://github.com/SpecQR/LocalFileTransfer.git") {
       problems.push("package.json: unexpected repository URL");
    }
-   if (webManifest.dependencies?.specqr !== "2.4.0") {
-      problems.push("apps/web/package.json: SpecQR must be pinned exactly to 2.4.0");
+   if (webManifest.dependencies?.specqr !== reviewedSpecqrVersion) {
+      problems.push("apps/web/package.json: SpecQR must be pinned exactly to " + reviewedSpecqrVersion);
    }
 }
 

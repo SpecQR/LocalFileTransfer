@@ -23,11 +23,11 @@ Local File Transfer は、Windows 上で一時的な双方向 transfer room を 
 ## 固定した技術判断
 
 - TypeScript、3-space indentation
-- Self-contained Windows shell として Electron 43
+- Self-contained Windows shell として Electron 43.7.7
 - Electron Utility Process 内の Fastify 5
 - Desktop/browser UI は React 18 と Vite 6
 - Repository boundary の背後に Node built-in SQLite
-- SpecQR exactly `2.4.0`、SVG output、`margin: 4`、automatic version、conditional L/M
+- SpecQR exactly `3.0.0-rc.2`（RC を明示採用）、SVG output、`margin: 4`、automatic version、conditional L/M。符号化と SVG 出力は全て SpecQR JavaScript で完結する
 - `lft-resume-v1`、4 MiB SHA-256 checkpoint、persistent idempotency
 - Download は whole-file SHA-256 と HTTP Range
 - Shared text の at-rest storage だけに AES-256-GCM と HKDF-SHA-256
@@ -135,6 +135,8 @@ Hostile-network confidentiality を本当に提供するには、local service �
 - Live QR value を log または public evidence に含めない。
 
 ## Current release truth
+
+以下は公開済み v2.0.1 の状態です。main の SpecQR 3.0.0-rc.2 更新は次回向けの source change であり、公開済み EXE の SpecQR 2.4.0 とその evidence を書き換えません。新しい QR 検証は [SpecQR 統合](SPECQR_INTEGRATION.md) を参照してください。
 
 - Version/tag: `2.0.1` / `v2.0.1`
 - License: MIT、copyright SpecQR contributors

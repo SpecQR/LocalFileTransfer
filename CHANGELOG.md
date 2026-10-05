@@ -4,6 +4,18 @@
 
 ## Unreleased
 
+### QR 生成
+
+- SpecQR を 2.4.0 から 3.0.0-rc.2 へ exact pin で更新しました。正式版ではなく RC を採用した更新です。公開済み v2.0.1 の EXE は 2.4.0 のままです。
+- QR 符号化と SVG 出力を SpecQR JavaScript だけで完結する構成を維持し、C# / C++ の native bridge や外部 QR 生成サービスは追加していません。
+- 旧版の IPv4 / IPv6 / hostname SVG を基準とする互換性テストと、実際のアプリ SVG を Chromium / WebKit で描画して独立 decoder で読み戻し、その URL で Room に参加する E2E 検証を追加しました。
+- 誤り訂正 L/M の選択、4 module の quiet zone、正方形 SVG、300 CSS px の desktop 幅を維持します。jsQR は検証専用の root devDependency で、製品の QR 生成には使用しません。
+
+### 依存関係
+
+- 更新時点の必須 dependency audit に対応し、Electron 43.0.0 を同じ 43 系の 43.7.7 に更新しました。
+- Fastify 5.12.5 と fast-uri の修正版、Browserslist 系と packaging tool の修正版を lockfile に反映しました。メジャーアップグレードの強制や audit gate の緩和は行っていません。
+
 ### Release engineering
 
 - GitHub CLI に Release asset とオプションを同時展開した際、PowerShell の native argument binding により stable release 作成が失敗し得る問題を修正しました。

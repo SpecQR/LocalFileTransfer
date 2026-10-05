@@ -47,7 +47,7 @@ npm audit --audit-level=high --prefix apps/web
 npm audit --audit-level=high --prefix apps/desktop
 ```
 
-`audit:public` は、version の全 scope 一致、SpecQR 2.4.0 exact pin、必須文書、private path、credential-like text、database、EXE、key material、private work log を検査します。
+`audit:public` は、version の全 scope 一致、互換性を検証した SpecQR 3.0.0-rc.2 exact pin、必須文書、private path、credential-like text、database、EXE、key material、private work log を検査します。
 
 ## Portable build
 

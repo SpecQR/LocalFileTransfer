@@ -8,7 +8,9 @@ Local File Transfer は、Windows 上で一時的な転送ルームを開き、�
 
 Windows 側に表示された QR コードを端末の標準カメラで読み取ると、通常のブラウザから同じルームへ参加できます。Windows から相手端末へ送る場合も、iPhone・iPad・Android・macOS・別の Windows から Windows へ送る場合も、同じ画面と同じ QR を使用します。
 
-この公開リポジトリは **2.0.0-rc.2** から始まります。また、[SpecQR 2.4.0](https://github.com/SpecQR/SpecQR) の実用的な統合例でもあります。ブラウザ UI は、4 module の quiet zone を含む SVG QR を生成し、QR Version を増やさずに利用できる範囲でより強い error correction level を選択します。
+この公開リポジトリは **2.0.0-rc.2** から始まります。また、[SpecQR](https://github.com/SpecQR/SpecQR) の実用的な統合例でもあります。QR の符号化から SVG 出力まで SpecQR の JavaScript ライブラリだけで生成します。ブラウザ UI は、4 module の quiet zone を含む SVG QR を表示し、QR Version を増やさずに利用できる範囲でより強い error correction level を選択します。
+
+現在の main は **SpecQR 3.0.0-rc.2（リリース候補版）** を採用しています。公開済みの Local File Transfer v2.0.1 EXE は SpecQR 2.4.0 を使用しています。更新判断と検証範囲は [SpecQR 統合](docs/SPECQR_INTEGRATION.md) を参照してください。
 
 ## 主な機能
 
