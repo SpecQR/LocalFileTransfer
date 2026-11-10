@@ -1,6 +1,7 @@
 param(
    [string] $ArchivePath = "",
-   [string] $EvidenceDirectory = ""
+   [string] $EvidenceDirectory = "",
+   [switch] $ProtocolPreflight
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,10 +27,11 @@ $Native = $null
 $Window = $null
 $Stage = "prepare"
 $LastCheck = "prepare"
+$ProtocolFailureCode = $null
 $StartupClock = $null
-$WindowVisibleSeconds = $null
+$WindowDetectedSeconds = $null
 $JoinUrl = $null
-$PreviousClipboard = [Windows.Forms.Clipboard]::GetText()
+$PreviousClipboard = if ($ProtocolPreflight) { $null } else { [Windows.Forms.Clipboard]::GetText() }
 $TrackedIds = [Collections.Generic.HashSet[int]]::new()
 $HttpHandler = [Net.Http.HttpClientHandler]::new()
 $HttpHandler.UseProxy = $false
@@ -41,11 +43,11 @@ function Wait-For {
    $script:LastCheck = $Description
    $waitClock = [Diagnostics.Stopwatch]::StartNew()
    while ($waitClock.Elapsed.TotalSeconds -lt $Seconds) {
-      if ($Native -and $StartupClock -and $null -eq $script:WindowVisibleSeconds) {
+      if ($Native -and $StartupClock -and $null -eq $script:WindowDetectedSeconds) {
          try {
             $Native.Refresh()
             if ($Native.MainWindowHandle -ne [IntPtr]::Zero) {
-               $script:WindowVisibleSeconds = $StartupClock.Elapsed.TotalSeconds
+               $script:WindowDetectedSeconds = $StartupClock.Elapsed.TotalSeconds
             }
          } catch { }
       }
@@ -152,6 +154,8 @@ function Read-RoomLink {
 
 function Invoke-Protocol {
    param([string] $Phase)
+   $script:LastCheck = "protocol-" + $Phase
+   $script:ProtocolFailureCode = $null
    $start = [Diagnostics.ProcessStartInfo]::new()
    $start.FileName = $NodePath
    $helper = Join-Path $PSScriptRoot "test-webview2-preview-protocol.mjs"
@@ -164,26 +168,38 @@ function Invoke-Protocol {
    $process = [Diagnostics.Process]::Start($start)
    $stdout = $process.StandardOutput.ReadToEndAsync()
    $stderr = $process.StandardError.ReadToEndAsync()
-   $process.StandardInput.WriteLine((@{
+   $inputJson = @{
       joinUrl = $JoinUrl
       fixturePath = $FixturePath
       statePath = $StatePath
       receiveDir = $ReceiveDir
-   } | ConvertTo-Json -Compress))
-   $process.StandardInput.Close()
+   } | ConvertTo-Json -Compress
+   $inputBytes = [Text.UTF8Encoding]::new($false).GetBytes($inputJson + "`n")
+   $inputStream = $process.StandardInput.BaseStream
+   try {
+      $inputStream.Write($inputBytes, 0, $inputBytes.Length)
+      $inputStream.Flush()
+   } finally { $inputStream.Close() }
    if (-not $process.WaitForExit(90000)) {
       $process.Kill()
+      $script:ProtocolFailureCode = "protocol-child-timeout"
       throw "Preview protocol phase timed out: $Phase"
    }
    $text = $stdout.GetAwaiter().GetResult()
    $errorText = $stderr.GetAwaiter().GetResult().Trim()
    if ($process.ExitCode -ne 0) {
-      if ($errorText -match '^WEBVIEW2_PROTOCOL_FAILURE=[a-z0-9-]+$') {
+      $script:ProtocolFailureCode = "protocol-child-exit"
+      if ($errorText -match '^WEBVIEW2_PROTOCOL_FAILURE=([a-z0-9-]+)$') {
+         $script:ProtocolFailureCode = $Matches[1]
          throw "Preview protocol phase failed: $Phase; $errorText"
       }
       throw "Preview protocol phase failed: $Phase"
    }
-   return $text | ConvertFrom-Json
+   try { return $text | ConvertFrom-Json }
+   catch {
+      $script:ProtocolFailureCode = "protocol-output-json"
+      throw "Preview protocol returned invalid JSON"
+   }
 }
 
 function Select-NativeFile {
@@ -226,12 +242,19 @@ function Exercise-SharedTextUi {
       if ($null -eq $Editor -or -not $Editor.Current.IsEnabled) { return $false }
       return $Editor.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq "WebView2 preview: HTTP shared text"
    }
-   $Editor.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("WebView2 preview: native shared text")
-   Invoke-Button -Names (Labels "sharedTextShare")
-   Wait-For -Description "shared text save completed" -Condition {
-      return $null -ne (Find-Control -Names (Labels "sharedTextShared"))
+   $dialog = $Editor
+   $titles = Labels "sharedTextTitle"
+   for ($depth = 0; $depth -lt 20 -and $null -ne $dialog; $depth++) {
+      if ($titles -contains $dialog.Current.Name) { break }
+      $dialog = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($dialog)
    }
-   Invoke-Button -Names (Labels "close")
+   if ($null -eq $dialog -or $titles -notcontains $dialog.Current.Name) { throw "Shared text dialog was not found" }
+   $Editor.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue("WebView2 preview: native shared text")
+   Invoke-Button -Names (Labels "sharedTextShare") -Within $dialog
+   Wait-For -Description "shared text save completed" -Condition {
+      return $null -ne (Find-Control -Names (Labels "sharedTextShared") -Within $dialog)
+   }
+   Invoke-Button -Names (Labels "close") -Within $dialog
 }
 
 function File-Hash {
@@ -244,8 +267,17 @@ function File-Hash {
 
 New-Item -ItemType Directory -Path $RunRoot, $PackageRoot, $DataRoot, $EvidenceRoot -Force | Out-Null
 try {
+   if ($ProtocolPreflight) {
+      $Stage = "protocol-preflight"
+      $prepared = Invoke-Protocol -Phase prepare
+      if ($prepared.prepared -ne $true) { throw "Preview protocol fixture was not prepared" }
+      [ordered]@{ schemaVersion = 1; protocolPreflight = $true; passed = $true } | ConvertTo-Json -Compress
+      return
+   }
+   $LastCheck = "archive-extraction"
    [IO.Compression.ZipFile]::ExtractToDirectory($Archive, $PackageRoot)
    $Executable = Join-Path $PackageRoot "LocalFileTransferPreview.exe"
+   $LastCheck = "root-native-executable"
    if (-not (Test-Path -LiteralPath $Executable)) { throw "Preview ZIP is missing its root executable" }
    Invoke-Protocol -Phase prepare | Out-Null
    $start = [Diagnostics.ProcessStartInfo]::new()
@@ -323,8 +355,8 @@ try {
       loopbackOnlyForSmoke = $true
       developerDebuggingEnabled = $false
       serviceReadySeconds = [math]::Round($serviceReadySeconds, 3)
-      windowVisibleSeconds = [math]::Round($WindowVisibleSeconds, 3)
-      windowVisibilityProbe = "first-nonzero-main-window-handle-observed"
+      windowDetectedSeconds = [math]::Round($WindowDetectedSeconds, 3)
+      windowReadinessProbe = "native-main-window-handle"
       appHttpReadySeconds = [math]::Round($appHttpReadySeconds, 3)
       desktopConnectedSeconds = [math]::Round($desktopConnectedSeconds, 3)
       desktopReadinessProbe = "windows-ui-automation-connected-status"
@@ -343,15 +375,24 @@ try {
    $json
 } catch {
    # Failure output intentionally excludes UI trees, response bodies, paths and logs.
-   $failure = [ordered]@{ schemaVersion = 1; phase = $Stage; lastCheck = $LastCheck; errorType = $_.Exception.GetType().Name; passed = $false }
+   $failure = [ordered]@{
+      schemaVersion = 1
+      phase = $Stage
+      lastCheck = $LastCheck
+      protocolFailureCode = $ProtocolFailureCode
+      errorType = $_.Exception.GetType().Name
+      passed = $false
+   }
    [IO.File]::WriteAllText((Join-Path $EvidenceRoot "WEBVIEW2_SMOKE_FAILURE.json"), ($failure | ConvertTo-Json) + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
    [Console]::Error.WriteLine("WEBVIEW2_SMOKE_FAILURE=" + ($failure | ConvertTo-Json -Compress))
    throw "WebView2 preview smoke failed in phase $Stage"
 } finally {
    $JoinUrl = $null
-   try {
-      if ($PreviousClipboard) { [Windows.Forms.Clipboard]::SetText($PreviousClipboard) } else { [Windows.Forms.Clipboard]::Clear() }
-   } catch { }
+   if (-not $ProtocolPreflight) {
+      try {
+         if ($PreviousClipboard) { [Windows.Forms.Clipboard]::SetText($PreviousClipboard) } else { [Windows.Forms.Clipboard]::Clear() }
+      } catch { }
+   }
    foreach ($process in @(Get-RelatedProcesses)) {
       Stop-Process -Id ([int]$process.ProcessId) -Force -ErrorAction SilentlyContinue
    }

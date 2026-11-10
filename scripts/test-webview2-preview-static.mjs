@@ -38,12 +38,28 @@ for (const architecture of ["x64", "arm64"]) {
    const name = `Local.File.Transfer-WebView2-Preview-${manifest.version}-${architecture}.zip`;
    const bytes = await readFile(join(preview, "release", name));
    requireCheck(bytes.readUInt32LE(0) === 0x04034b50, "Invalid ZIP header");
-   artifacts.push({ name, architecture, bytes: bytes.length, sha256: digest(bytes), executables, staticValidationPassed: true });
+   let archiveValidation;
+   try {
+      archiveValidation = JSON.parse(execFileSync("powershell.exe", [
+         "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+         "-File", join(root, "scripts/test-webview2-preview-archive.ps1"),
+         "-Architecture", architecture
+      ], { cwd: root, encoding: "utf8", windowsHide: true, stdio: ["ignore", "pipe", "pipe"] }));
+   } catch {
+      throw new Error("Preview ZIP extraction or complete file-hash comparison failed");
+   }
+   requireCheck(archiveValidation.architecture === architecture && archiveValidation.archiveContentsMatchedStage === true, "Archive validation identity mismatch");
+   artifacts.push({
+      name, architecture, bytes: bytes.length, sha256: digest(bytes), executables,
+      archiveContentsMatchedStage: true,
+      validatedArchiveFiles: archiveValidation.validatedArchiveFiles,
+      staticValidationPassed: true
+   });
 }
 
 await mkdir(evidenceDirectory, { recursive: true });
 const smoke = JSON.parse(await readFile(join(evidenceDirectory, "WEBVIEW2_SMOKE.json"), "utf8"));
-requireCheck(smoke.archiveSha256 === artifacts[0].sha256 && smoke.version === manifest.version, "Smoke evidence does not match the exact x64 ZIP");
+requireCheck(smoke.archiveSha256 === artifacts[0].sha256 && smoke.version === manifest.version && smoke.sourceCommit === sourceCommit, "Smoke evidence does not match the exact x64 ZIP and source commit");
 requireCheck(smoke.extractedDistributionTested && smoke.desktopReadyBeforeInterruption && smoke.gracefulWindowClose && smoke.endpointClosed && smoke.residualProcesses === 0, "Packaged lifecycle gate failed");
 requireCheck(smoke.transfer?.nativeFilePickerToDownloadPassed && smoke.transfer?.rangeDownloadPassed && smoke.transfer?.uploadToReceiveDirectoryPassed && smoke.transfer?.checkpointReplayPassed && smoke.transfer?.sharedTextConflictPassed, "Transfer gate failed");
 requireCheck(smoke.sharedText?.nativeSharedTextUiPassed && smoke.recovery?.durableUploadResumedAfterServiceCrash && smoke.recovery?.sharedTextPreserved && smoke.recovery?.roomPreserved, "Packaged recovery gate failed");

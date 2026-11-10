@@ -210,7 +210,7 @@ async function collectDependencies(metafile, platform) {
       }
 
       seen.add(id);
-      const texts = await licenseTexts(directory);
+      const texts = await licenseTexts(directory, undefined, { ...pkg, ecosystem: "npm" });
       inventory.push({ ecosystem: "npm", name: pkg.name, version: pkg.version, license: pkg.license ?? "UNKNOWN" });
       notices.push(formatNotice(id, pkg.license, texts));
    }
@@ -225,11 +225,93 @@ async function collectDependencies(metafile, platform) {
          continue;
       }
 
+      if (pkg.source !== "registry+https://github.com/rust-lang/crates.io-index") {
+         throw new Error("Review source-code notices before adding a non-crates.io dependency");
+      }
+
       const directory = dirname(pkg.manifest_path);
-      const texts = await licenseTexts(directory, pkg.license_file);
-      inventory.push({ ecosystem: "cargo", name: pkg.name, version: pkg.version, license: pkg.license ?? "UNKNOWN" });
-      notices.push(formatNotice(`cargo:${pkg.name}@${pkg.version}`, pkg.license, texts));
+      const texts = await licenseTexts(directory, pkg.license_file, { ...pkg, ecosystem: "cargo" });
+      const source = `https://static.crates.io/crates/${encodeURIComponent(pkg.name)}/${encodeURIComponent(pkg.name)}-${encodeURIComponent(pkg.version)}.crate`;
+
+      inventory.push({ ecosystem: "cargo", name: pkg.name, version: pkg.version, license: pkg.license ?? "UNKNOWN", source });
+      notices.push(formatNotice(`cargo:${pkg.name}@${pkg.version}`, pkg.license, [
+         ...texts, { name: "Corresponding source code", text: source }
+      ]));
    }
+
+   // webview2-com-sys includes Microsoft's loader as a static library. Its MIT
+   // crate license does not replace the original SDK's redistribution notices.
+   const loader = metadata.packages.find((pkg) => resolvedIds.has(pkg.id) && pkg.name === "webview2-com-sys");
+   const sdkVersion = "1.0.3800.47";
+   const sdkSource = `https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/${sdkVersion}/microsoft.web.webview2.${sdkVersion}.nupkg`;
+   const sdkSha256 = "56c9f26bdd07916a2d1949fb58a5c7e434dfa1173577dca879206050c4e718db";
+   const sdkTextHashes = {
+      "LICENSE.txt": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55",
+      "NOTICE.txt": "106423785c5b7eba0a8e61d1837f2132e9c828e20ad530f565d981c1df60dd90"
+   };
+   const loaderHashes = {
+      "x86_64-pc-windows-msvc": ["x64", "89c6b872783b8f6c3cedbff618adb42082d455c615453ae10cfc753f1e8f25d8"],
+      "aarch64-pc-windows-msvc": ["arm64", "4a1ca4b518337c508aa0d778b220c6e59558fce21f4fd0d79a6ea944dd9d5208"]
+   };
+   const loaderSpec = loaderHashes[platform];
+
+   if (!loader || loader.version !== "0.39.1" || !loaderSpec) {
+      throw new Error("Review WebView2 SDK notices when changing the loader crate or target");
+   }
+
+   const loaderBytes = await readFile(join(dirname(loader.manifest_path), loaderSpec[0], "WebView2LoaderStatic.lib"));
+
+   if (hash(loaderBytes) !== loaderSpec[1]) {
+      throw new Error("The WebView2 loader differs from the reviewed Microsoft SDK");
+   }
+
+   const sdkRoot = join(previewRoot, ".cache", "webview2-sdk", sdkVersion);
+   const sdkTexts = [];
+   let sdkCached = true;
+
+   for (const [name, expected] of Object.entries(sdkTextHashes)) {
+      const bytes = await readFile(join(sdkRoot, name)).catch(() => null);
+
+      if (!bytes || hash(bytes) !== expected) {
+         sdkCached = false;
+         break;
+      }
+   }
+
+   if (!sdkCached) {
+      const archive = await download(sdkSource);
+
+      if (hash(archive) !== sdkSha256) {
+         throw new Error("The Microsoft WebView2 SDK failed checksum verification");
+      }
+
+      await rm(sdkRoot, { recursive: true, force: true });
+      await mkdir(sdkRoot, { recursive: true });
+      const archivePath = join(sdkRoot, "sdk.zip");
+
+      await writeFile(archivePath, archive);
+      run("powershell.exe", [
+         "-NoProfile", "-NonInteractive", "-Command",
+         "$ErrorActionPreference='Stop'; Expand-Archive -LiteralPath $env:LFT_SDK_ARCHIVE -DestinationPath $env:LFT_SDK_ROOT -Force"
+      ], root, { LFT_SDK_ARCHIVE: archivePath, LFT_SDK_ROOT: sdkRoot });
+   }
+
+   for (const [name, expected] of Object.entries(sdkTextHashes)) {
+      const bytes = await readFile(join(sdkRoot, name));
+
+      if (hash(bytes) !== expected) {
+         throw new Error("The Microsoft WebView2 SDK license or notice differs from the reviewed text");
+      }
+
+      sdkTexts.push({ name, text: `Source package: ${sdkSource}\nPackage SHA-256: ${sdkSha256}\nText SHA-256: ${expected}\n\n${bytes.toString("utf8")}` });
+   }
+
+   inventory.push({
+      ecosystem: "sdk", name: "Microsoft.Web.WebView2 (static loader)", version: sdkVersion,
+      license: "Microsoft WebView2 SDK license and notices", source: sdkSource,
+      sourceSha256: sdkSha256, loaderSha256: loaderSpec[1]
+   });
+   notices.push(formatNotice(`sdk:Microsoft.Web.WebView2@${sdkVersion} (static loader)`, "see LICENSE.txt and NOTICE.txt", sdkTexts));
 
    const nodeLicense = (await download(
       `https://raw.githubusercontent.com/nodejs/node/v${manifest.nodeVersion}/LICENSE`
@@ -242,8 +324,8 @@ async function collectDependencies(metafile, platform) {
    };
 }
 
-async function licenseTexts(directory, explicit) {
-   const names = (await readdir(directory)).filter((name) => /^(?:licen[cs]e|copying|notice)(?:[._-].*)?$/iu.test(name));
+async function licenseTexts(directory, explicit, pkg) {
+   const names = (await readdir(directory)).filter((name) => /^(?:licen[cs]e|copying|notice)(?:[._-].*)?$/iu.test(name)).sort();
 
    if (explicit && !names.includes(explicit)) {
       names.push(explicit);
@@ -259,7 +341,118 @@ async function licenseTexts(directory, explicit) {
       }
    }
 
-   return texts;
+   if (texts.length > 0) {
+      return texts;
+   }
+
+   const id = pkg ? `${pkg.ecosystem}:${pkg.name}@${pkg.version}` : "unknown";
+   const fallbacks = {
+      "cargo:alloc-stdlib@0.3.0": {
+         repository: "https://github.com/dropbox/rust-alloc-no-stdlib", license: "BSD-3-Clause",
+         revision: "0a81fd6928ea3b33c8cd484aa4575d50ffb98012", path: "alloc-stdlib",
+         filename: "LICENSE", sha256: "c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae"
+      },
+      "cargo:selectors@0.38.0": {
+         repository: "https://github.com/servo/stylo", license: "MPL-2.0",
+         revision: "572ecba2d1600e7c3d490586692a209faf703baa", path: "selectors",
+         filename: "MPL-2.0.txt", url: "https://www.mozilla.org/media/MPL/2.0/index.txt",
+         sha256: "3f3d9e0024b1921b067d6f7f88deb4a60cbe7a78e76c64e3f1d7fc3b779b9d04"
+      },
+      "cargo:webview2-com@0.39.1": {
+         repository: "https://github.com/wravery/webview2-rs", license: "MIT",
+         revision: "edc2caf886175ccaebe86078c9cfe1ae2a187328", path: "crates/webview2-com",
+         filename: "LICENSE", sha256: "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
+      },
+      "cargo:webview2-com-macros@0.8.1": {
+         repository: "https://github.com/wravery/webview2-rs", license: "MIT",
+         revision: "dffa41a8a46d3f5565eefbff2de57d38d399f158", path: "crates/callback-macros",
+         filename: "LICENSE", sha256: "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
+      },
+      "cargo:webview2-com-sys@0.39.1": {
+         repository: "https://github.com/wravery/webview2-rs", license: "MIT",
+         revision: "edc2caf886175ccaebe86078c9cfe1ae2a187328", path: "crates/bindings",
+         filename: "LICENSE", sha256: "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
+      }
+   };
+
+   if (id === "npm:abstract-logging@2.0.1") {
+      // This exact release links to the author's MIT permalink instead of
+      // shipping LICENSE. Reproduce its plain-text, release-year view from the
+      // permalink service's immutable template and author record, without
+      // executing downloaded templates or checking license text into Git.
+      const readme = await readFile(join(directory, "Readme.md"));
+
+      if (pkg.license !== "MIT" || pkg.repository?.url !== "git+https://github.com/jsumners/abstract-logging.git"
+         || hash(readme) !== "e1a86711fb5055c0e66901276b7d2c843554bf5f1dab218c069c8b9d17148e81") {
+         throw new Error("Review the abstract-logging license fallback for this package");
+      }
+
+      const base = "https://raw.githubusercontent.com/remy/mit-license/52b34028e15bfa96c8385d768c5ef82099e9dbfe";
+      const templateSource = base + "/licenses/MIT.ejs";
+      const ownerSource = base + "/users/jsumners.json";
+      const template = (await verifiedDownload(templateSource, "75bd0d442091ebfb2ab8f7e3a1d507686fc7c9e87a1579558e2537e7b2b447a4")).toString("utf8");
+      const owner = JSON.parse((await verifiedDownload(ownerSource, "15932b5c544d31afb72ca38c331ea0f11b24f5eb12c850923392c18dd8641b75")).toString("utf8"));
+      const article = template.match(/<article>([\s\S]*?)<\/article>/u)?.[1];
+      const paragraphs = [...(article ?? "").matchAll(/<(h1|p)>([\s\S]*?)<\/\1>/gu)]
+         .map((match) => match[2].replace("<%- info %>", `2020 ${owner.copyright} <${owner.email}>`).replace(/\s+/gu, " ").trim());
+
+      if (paragraphs.length !== 5 || paragraphs.some((paragraph) => paragraph.includes("<%"))) {
+         throw new Error("The abstract-logging license template could not be rendered");
+      }
+
+      const text = paragraphs.join("\n\n") + "\n";
+
+      if (hash(Buffer.from(text, "utf8")) !== "8649735cd75e436ccb541103f866c716976a9ad71358fa4aca9b51cd1ae0c825") {
+         throw new Error("The rendered abstract-logging license differs from the reviewed text");
+      }
+
+      return [{
+         name: "MIT.txt",
+         text: `Package source: https://github.com/jsumners/abstract-logging/tree/80dfaef91ee87008f4ed2b6e78921d383bccd406\nAuthor license permalink: https://jsumners.mit-license.org/@2020/license.txt\nTemplate source: ${templateSource}\nAuthor record source: ${ownerSource}\n\n${text}`
+      }];
+   }
+
+   const fallback = fallbacks[id];
+
+   if (!fallback || pkg.repository !== fallback.repository || pkg.license !== fallback.license) {
+      throw new Error(`No reviewed license text is available for ${id}`);
+   }
+
+   const vcs = JSON.parse(await readFile(join(directory, ".cargo_vcs_info.json"), "utf8"));
+
+   if (vcs.git?.sha1 !== fallback.revision || vcs.path_in_vcs !== fallback.path || vcs.git?.dirty) {
+      throw new Error(`The license fallback source revision differs for ${id}`);
+   }
+
+   // selectors deliberately links to Mozilla's canonical MPL rather than
+   // carrying LICENSE in its repository (upstream servo/stylo issue #317).
+   const url = fallback.url ?? `${fallback.repository.replace("https://github.com/", "https://raw.githubusercontent.com/")}/${fallback.revision}/${fallback.filename}`;
+   const source = `${fallback.repository}/tree/${fallback.revision}/${fallback.path}`;
+   const bytes = await verifiedDownload(url, fallback.sha256);
+
+   return [{
+      name: fallback.filename,
+      text: `License source: ${url}\nSHA-256: ${fallback.sha256}\nCorresponding source code (${fallback.license}): ${source}\n\n${bytes.toString("utf8")}`
+   }];
+
+   async function verifiedDownload(url, expected) {
+      const cachePath = join(previewRoot, ".cache", "licenses", expected + ".txt");
+      const cached = await readFile(cachePath).catch(() => null);
+
+      if (cached && hash(cached) === expected) {
+         return cached;
+      }
+
+      const bytes = await download(url);
+
+      if (bytes.length === 0 || bytes.length > 2_000_000 || hash(bytes) !== expected) {
+         throw new Error(`The reviewed license checksum differs for ${id}`);
+      }
+
+      await mkdir(dirname(cachePath), { recursive: true });
+      await writeFile(cachePath, bytes);
+      return bytes;
+   }
 }
 
 function formatNotice(id, license, texts) {
