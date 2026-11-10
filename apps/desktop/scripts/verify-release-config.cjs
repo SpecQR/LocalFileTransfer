@@ -28,6 +28,14 @@ if (build.portable?.artifactName !== "Local.File.Transfer-${version}-${arch}-Por
    throw new Error("Portable artifacts must include version and architecture");
 }
 
+if (build.portable?.useZip !== true || build.compression !== "normal") {
+   throw new Error("Portable artifacts must use direct zlib extraction with normal compression");
+}
+
+if (build.beforePack !== "scripts/prepare-portable.cjs") {
+   throw new Error("Portable builds must validate the pinned ARM64 extraction template");
+}
+
 for (const name of ["dist", "dist:arm64", "dist:signed:x64", "dist:signed:arm64"]) {
    if (typeof manifest.scripts?.[name] !== "string") {
       throw new Error("Missing release script: " + name);
@@ -49,6 +57,9 @@ process.stdout.write(JSON.stringify({
    productName: build.productName,
    targets,
    portableArtifactName: build.portable.artifactName,
+   portableCompression: "zlib",
+   portableExtraction: "direct-to-temporary-directory",
+   portableTemplateHook: build.beforePack,
    electronBuilderAutoPublish: false,
    signingCredentialsEmbedded: false,
    updaterConfigured: false

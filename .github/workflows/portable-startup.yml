@@ -1,0 +1,172 @@
+name: Portable 起動性能の検証
+
+on:
+   pull_request:
+      paths:
+         - ".github/workflows/portable-startup.yml"
+         - "apps/**"
+         - "packages/**"
+         - "scripts/**"
+         - "tests/**"
+         - "package*.json"
+         - "playwright.config.ts"
+         - "tsconfig*.json"
+   workflow_dispatch:
+
+permissions:
+   contents: read
+
+concurrency:
+   group: portable-startup-${{ github.ref }}
+   cancel-in-progress: true
+
+jobs:
+   verify:
+      name: Windows Portable の比較と runtime 検証
+      runs-on: windows-2022
+      timeout-minutes: 60
+      steps:
+         - name: Source を checkout
+           uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+         - name: Node.js を設定
+           uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+           with:
+              node-version: "22"
+              cache: npm
+              cache-dependency-path: |
+                 package-lock.json
+                 apps/server/package-lock.json
+                 apps/web/package-lock.json
+                 apps/desktop/package-lock.json
+
+         - name: Dependency を install
+           shell: pwsh
+           run: |
+              foreach ($scope in @(".", "apps/server", "apps/web", "apps/desktop")) {
+                 npm ci --prefix $scope
+                 if ($LASTEXITCODE -ne 0) { throw "Dependency install failed: $scope" }
+              }
+         - name: Source gate と production build
+           shell: pwsh
+           run: |
+              foreach ($script in @("audit:public", "build", "verify:release-config")) {
+                 npm run $script
+                 if ($LASTEXITCODE -ne 0) { throw "Source gate failed: $script" }
+              }
+         - name: Browser と Electron E2E
+           shell: pwsh
+           run: |
+              npx playwright install chromium webkit
+              if ($LASTEXITCODE -ne 0) { throw "Playwright browser install failed" }
+              npm run test:e2e
+              if ($LASTEXITCODE -ne 0) { throw "Browser/Electron E2E failed" }
+
+         - name: 同一 source の既存 7z 方式を build
+           working-directory: apps/desktop
+           shell: pwsh
+           run: |
+              npx --no-install electron-builder --win portable --x64 --publish never --config.portable.useZip=false --config.directories.output=release/baseline
+              if ($LASTEXITCODE -ne 0) { throw "Baseline Portable build failed" }
+         - name: 高速展開版を両 architecture で build
+           shell: pwsh
+           run: |
+              npm run dist:windows
+              if ($LASTEXITCODE -ne 0) { throw "Optimized x64 Portable build failed" }
+              npm run dist:windows:arm64
+              if ($LASTEXITCODE -ne 0) { throw "Optimized ARM64 Portable build failed" }
+         - name: 同一 source の無圧縮 x64 版を build
+           working-directory: apps/desktop
+           shell: pwsh
+           run: |
+              npx --no-install electron-builder --win portable --x64 --publish never --config.compression=store --config.portable.useZip=true --config.directories.output=release/uncompressed
+              if ($LASTEXITCODE -ne 0) { throw "Uncompressed x64 Portable build failed" }
+
+         - name: 両 architecture の PE と fuse を検証
+           shell: pwsh
+           run: |
+              $ErrorActionPreference = "Stop"
+              $version = (Get-Content -LiteralPath "package.json" -Raw | ConvertFrom-Json).version
+              $results = @()
+              foreach ($entry in @(
+                 @{ architecture = "x64"; output = "."; directory = "win-unpacked"; machine = 0x8664; compression = "normal" },
+                 @{ architecture = "arm64"; output = "."; directory = "win-arm64-unpacked"; machine = 0xAA64; compression = "normal" },
+                 @{ architecture = "x64"; output = "uncompressed"; directory = "win-unpacked"; machine = 0x8664; compression = "store" }
+              )) {
+                 $releaseRoot = Join-Path "apps/desktop/release" $entry.output
+                 $executable = Join-Path $releaseRoot (Join-Path $entry.directory "Local File Transfer.exe")
+                 $bytes = [IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $executable).Path)
+                 if ($bytes.Length -lt 64 -or [Text.Encoding]::ASCII.GetString($bytes, 0, 2) -ne "MZ") {
+                    throw "Invalid PE DOS header"
+                 }
+                 $offset = [BitConverter]::ToInt32($bytes, 0x3C)
+                 if ($offset -lt 0 -or $offset + 6 -gt $bytes.Length -or [Text.Encoding]::ASCII.GetString($bytes, $offset, 4) -ne "PE`0`0") {
+                    throw "Invalid PE signature"
+                 }
+                 $machine = [BitConverter]::ToUInt16($bytes, $offset + 4)
+                 if ($machine -ne $entry.machine) { throw "Unexpected PE architecture" }
+                 $fuseJson = node apps/desktop/scripts/verify-fuses.cjs $executable
+                 if ($LASTEXITCODE -ne 0) { throw "Electron fuse validation failed" }
+                 $artifactName = "Local.File.Transfer-$version-$($entry.architecture)-Portable.exe"
+                 $inspectionJson = node scripts/inspect-release-artifact.mjs (Join-Path $releaseRoot $artifactName)
+                 if ($LASTEXITCODE -ne 0) { throw "Portable artifact inspection failed" }
+                 $results += [ordered]@{
+                    architecture = $entry.architecture
+                    portableUseZip = $true
+                    compression = $entry.compression
+                    artifact = $artifactName
+                    peMachine = "0x{0:X4}" -f $machine
+                    fuses = ($fuseJson | ConvertFrom-Json)
+                    inspection = ($inspectionJson | ConvertFrom-Json)
+                    staticValidationPassed = $true
+                 }
+              }
+              $directory = "test-results/portable-startup"
+              New-Item -ItemType Directory -Path $directory -Force | Out-Null
+              $report = [ordered]@{
+                 schemaVersion = 1
+                 sourceCommit = $env:GITHUB_SHA
+                 arm64RuntimeMeasured = $false
+                 artifacts = $results
+              }
+              [IO.File]::WriteAllText(
+                 (Join-Path (Get-Location) "$directory/PACKAGING_VALIDATION.json"),
+                 ($report | ConvertTo-Json -Depth 10) + [Environment]::NewLine,
+                 [Text.UTF8Encoding]::new($false)
+              )
+
+         - name: x64 起動時間と packaged recovery を比較
+           shell: pwsh
+           run: |
+              $version = (Get-Content -LiteralPath "package.json" -Raw | ConvertFrom-Json).version
+              $artifactName = "Local.File.Transfer-$version-x64-Portable.exe"
+              & ./scripts/compare-portable-startup.ps1 `
+                 -BaselineArtifact "apps/desktop/release/baseline/$artifactName" `
+                 -OptimizedArtifact "apps/desktop/release/$artifactName" `
+                 -BaselinePackaging 7z -BaselineCompression normal `
+                 -OptimizedPackaging direct -OptimizedCompression normal `
+                 -Samples 3
+
+         - name: 圧縮ありと無圧縮の x64 起動時間を比較
+           shell: pwsh
+           run: |
+              $version = (Get-Content -LiteralPath "package.json" -Raw | ConvertFrom-Json).version
+              $artifactName = "Local.File.Transfer-$version-x64-Portable.exe"
+              & ./scripts/compare-portable-startup.ps1 `
+                 -BaselineArtifact "apps/desktop/release/$artifactName" `
+                 -OptimizedArtifact "apps/desktop/release/uncompressed/$artifactName" `
+                 -BaselinePackaging direct -BaselineCompression normal `
+                 -OptimizedPackaging direct -OptimizedCompression store `
+                 -EvidenceDirectory "test-results/portable-startup-uncompressed" `
+                 -Samples 3
+
+         - name: 起動比較と static evidence だけを保存
+           if: always()
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+              name: Portable-startup-evidence
+              path: |
+                 test-results/portable-startup/STARTUP_COMPARISON.json
+                 test-results/portable-startup/PACKAGING_VALIDATION.json
+                 test-results/portable-startup-uncompressed/STARTUP_COMPARISON.json
+              if-no-files-found: ignore
+              retention-days: 14

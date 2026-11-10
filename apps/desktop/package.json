@@ -28,6 +28,8 @@
    "build": {
       "appId": "local.file.transfer",
       "productName": "Local File Transfer",
+      "compression": "normal",
+      "beforePack": "scripts/prepare-portable.cjs",
       "electronFuses": {
          "runAsNode": false,
          "enableCookieEncryption": true,
@@ -59,7 +61,8 @@
          ]
       },
       "portable": {
-         "artifactName": "Local.File.Transfer-${version}-${arch}-Portable.${ext}"
+         "artifactName": "Local.File.Transfer-${version}-${arch}-Portable.${ext}",
+         "useZip": true
       }
    },
    "dependencies": {
@@ -68,7 +71,7 @@
    "devDependencies": {
       "@electron/fuses": "2.1.3",
       "@types/node": "^25.9.1",
-      "electron": "43.7.7",
+      "electron": "43.8.7",
       "electron-builder": "^26.15.3",
       "esbuild": "^0.28.0",
       "typescript": "^6.0.3"
