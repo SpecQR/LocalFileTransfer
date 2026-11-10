@@ -77,7 +77,7 @@ node apps/webview2/scripts/build.mjs --arch arm64
 
 SEA は公式 Node.js executable を公式 SHA-256 一覧で検証して作成します。追加 Node.js CLI / `NODE_OPTIONS` は受け付けない構成です。両 architecture に対応するため、architecture に依存する snapshot / code cache は使用しません。既存の Node.js 署名を取り除いた上で bundle を埋め込みます。
 
-GitHub Actions の専用 workflow は、PR では検証のみを行います。専用の `release/webview2-preview` branch への push または `webview2-preview-v<version>` tag の検証成功時だけ、同じ source から再構築して配布 ZIP を検証し、GitHub の prerelease として公開します。branch からの公開も固定した source commit を対象に同じ preview tag を作成します。通常版の `v*` release workflow と tag を分けています。実行ファイルは Git repository や Actions artifact に含めず、GitHub Release asset としてのみ提供します。
+GitHub Actions の専用 workflow は、PR では検証のみを行います。専用の `release/webview2-preview` branch への push または `webview2-preview-v<version>` tag では、公開 job が固定した source から build し、全 source gate、E2E、native test、配布 ZIP の実動作・静的検証に成功した場合だけ、その同じ ZIP を GitHub の prerelease として公開します。branch からの公開も固定した source commit を対象に同じ preview tag を作成します。通常版の `v*` release workflow と tag を分けています。実行ファイルは Git repository や Actions artifact に含めず、GitHub Release asset としてのみ提供します。
 
 ## 一次資料
 

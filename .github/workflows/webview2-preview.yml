@@ -25,6 +25,7 @@ concurrency:
 jobs:
    verify:
       name: WebView2 preview の source と両 architecture を検証
+      if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
       runs-on: windows-2022
       timeout-minutes: 90
       steps:
@@ -80,13 +81,11 @@ jobs:
               if ($LASTEXITCODE -ne 0) { throw "Browser install failed" }
               npm run test:e2e
               if ($LASTEXITCODE -ne 0) { throw "Browser and Electron E2E failed" }
-         - name: 両 architecture の ZIP を build
+         - name: x64 の ZIP を build
            shell: pwsh
            run: |
               node apps/webview2/scripts/build.mjs --arch x64
               if ($LASTEXITCODE -ne 0) { throw "x64 preview build failed" }
-              node apps/webview2/scripts/build.mjs --arch arm64
-              if ($LASTEXITCODE -ne 0) { throw "ARM64 preview build failed" }
          - name: Native credential と loopback の boundary を検証
            working-directory: apps/webview2/native
            shell: pwsh
@@ -98,6 +97,11 @@ jobs:
            run: |
               powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1
               if ($LASTEXITCODE -ne 0) { throw "Packaged WebView2 preview smoke failed" }
+         - name: ARM64 の ZIP を build
+           shell: pwsh
+           run: |
+              node apps/webview2/scripts/build.mjs --arch arm64
+              if ($LASTEXITCODE -ne 0) { throw "ARM64 preview build failed" }
          - name: 両 PE と配布 ZIP の evidence を照合
            shell: pwsh
            run: |
@@ -117,8 +121,7 @@ jobs:
               retention-days: 14
 
    publish:
-      name: 検証済み source から試作版を再構築して公開
-      needs: verify
+      name: 試作版の実 ZIP を作成して検証後に公開
       if: github.event_name == 'push' && (github.ref == 'refs/heads/release/webview2-preview' || startsWith(github.ref, 'refs/tags/webview2-preview-v'))
       runs-on: windows-2022
       timeout-minutes: 90
@@ -175,13 +178,11 @@ jobs:
               if ($LASTEXITCODE -ne 0) { throw "Browser install failed" }
               npm run test:e2e
               if ($LASTEXITCODE -ne 0) { throw "Browser and Electron E2E failed" }
-         - name: 両 architecture の ZIP を build
+         - name: x64 の ZIP を build
            shell: pwsh
            run: |
               node apps/webview2/scripts/build.mjs --arch x64
               if ($LASTEXITCODE -ne 0) { throw "x64 preview build failed" }
-              node apps/webview2/scripts/build.mjs --arch arm64
-              if ($LASTEXITCODE -ne 0) { throw "ARM64 preview build failed" }
          - name: Native credential と loopback の boundary を検証
            working-directory: apps/webview2/native
            shell: pwsh
@@ -193,6 +194,11 @@ jobs:
            run: |
               powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1
               if ($LASTEXITCODE -ne 0) { throw "Packaged WebView2 preview smoke failed" }
+         - name: ARM64 の ZIP を build
+           shell: pwsh
+           run: |
+              node apps/webview2/scripts/build.mjs --arch arm64
+              if ($LASTEXITCODE -ne 0) { throw "ARM64 preview build failed" }
          - name: 両 PE と配布 ZIP の evidence を照合
            shell: pwsh
            run: |

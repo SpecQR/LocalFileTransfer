@@ -335,9 +335,10 @@ test("release and startup workflow PowerShell blocks parse before a tag is pushe
             "Source gate と build",
             "Windows stdio の protocol fixture を先に検証",
             "Browser と Electron E2E",
-            "両 architecture の ZIP を build",
+            "x64 の ZIP を build",
             "Native credential と loopback の boundary を検証",
             "実際の x64 ZIP から native UI と転送と復旧を検証",
+            "ARM64 の ZIP を build",
             "両 PE と配布 ZIP の evidence を照合",
             "新しい prerelease に exact ZIP と evidence を公開"
          ]

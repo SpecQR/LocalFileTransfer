@@ -6,6 +6,50 @@ param(
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Windows.Forms, System.Net.Http, System.IO.Compression.FileSystem
+Add-Type -TypeDefinition @"
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
+
+public sealed class LftPreviewWindowSnapshot {
+   public bool VisibleWindowFound;
+   public IntPtr[] Dialogs;
+}
+
+public static class LftPreviewNativeWindows {
+   private delegate bool WindowCallback(IntPtr window, IntPtr parameter);
+
+   [DllImport("user32.dll")]
+   private static extern bool EnumWindows(WindowCallback callback, IntPtr parameter);
+
+   [DllImport("user32.dll")]
+   private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+
+   [DllImport("user32.dll")]
+   private static extern bool IsWindowVisible(IntPtr window);
+
+   [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+   private static extern int GetClassName(IntPtr window, StringBuilder name, int length);
+
+   public static LftPreviewWindowSnapshot Inspect(uint processId) {
+      var result = new LftPreviewWindowSnapshot();
+      var dialogs = new List<IntPtr>();
+      EnumWindows(delegate(IntPtr window, IntPtr parameter) {
+         uint ownerProcessId;
+         GetWindowThreadProcessId(window, out ownerProcessId);
+         if (ownerProcessId != processId || !IsWindowVisible(window)) return true;
+         result.VisibleWindowFound = true;
+         var className = new StringBuilder(128);
+         GetClassName(window, className, className.Capacity);
+         if (className.ToString() == "#32770") dialogs.Add(window);
+         return true;
+      }, IntPtr.Zero);
+      result.Dialogs = dialogs.ToArray();
+      return result;
+   }
+}
+"@
 $Root = Split-Path -Parent $PSScriptRoot
 $SourceCommit = & git -C $Root rev-parse HEAD
 if ($LASTEXITCODE -ne 0) { throw "Unable to identify the tested source commit" }
@@ -28,6 +72,8 @@ $Window = $null
 $Stage = "prepare"
 $LastCheck = "prepare"
 $ProtocolFailureCode = $null
+$NativeWindowObserved = $false
+$NativeDialogObserved = $false
 $StartupClock = $null
 $WindowDetectedSeconds = $null
 $JoinUrl = $null
@@ -213,15 +259,19 @@ function Select-NativeFile {
    Invoke-Button -Names (Labels "addFiles")
    $script:FileDialog = $null
    Wait-For -Description "native file dialog" -Condition {
-      $condition = [System.Windows.Automation.AndCondition]::new(
-         [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::ProcessIdProperty, [int]$Native.Id),
-         [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::ClassNameProperty, "#32770")
-      )
-      $script:FileDialog = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst(
-         [System.Windows.Automation.TreeScope]::Children, $condition
-      )
+      # Owned modal dialogs need not be children of the UI Automation desktop root.
+      $windows = [LftPreviewNativeWindows]::Inspect([uint32]$Native.Id)
+      $script:NativeWindowObserved = $windows.VisibleWindowFound
+      $script:NativeDialogObserved = $windows.Dialogs.Length -gt 0
+      foreach ($handle in $windows.Dialogs) {
+         try {
+            $script:FileDialog = [System.Windows.Automation.AutomationElement]::FromHandle($handle)
+            if ($null -ne $FileDialog) { break }
+         } catch { }
+      }
       return $null -ne $FileDialog
    }
+   $script:LastCheck = "native file name control"
    $id = [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::AutomationIdProperty, "1148")
    $nameBox = $FileDialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $id)
    if ($null -eq $nameBox) { throw "Native file dialog has no filename control" }
@@ -233,6 +283,7 @@ function Select-NativeFile {
    }
    if ($null -eq $nameBox) { throw "Native file dialog has no filename edit" }
    $nameBox.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($FixturePath)
+   $script:LastCheck = "native file Open action"
    $open = $FileDialog.FindFirst(
       [System.Windows.Automation.TreeScope]::Descendants,
       [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::AutomationIdProperty, "1")
@@ -387,6 +438,8 @@ try {
       phase = $Stage
       lastCheck = $LastCheck
       protocolFailureCode = $ProtocolFailureCode
+      nativeWindowObserved = $NativeWindowObserved
+      nativeDialogObserved = $NativeDialogObserved
       errorType = $_.Exception.GetType().Name
       passed = $false
    }
