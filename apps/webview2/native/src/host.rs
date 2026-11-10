@@ -16,7 +16,8 @@ use tauri::{
 };
 
 const TITLE: &str = "Local File Transfer WebView2 Preview";
-const LOADING_URL: &str = "http://tauri.localhost/index.html";
+// Tauri resolves App("index.html") to the app base URL on Windows.
+const LOADING_URL: &str = "http://tauri.localhost/";
 const ALLOWED_COMMANDS: &[&str] = &[
    "room-bootstrap",
    "choose-files",
@@ -414,6 +415,12 @@ fn authorize(window: &WebviewWindow, state: &HostState) -> Result<(), String> {
    Ok(())
 }
 
+fn capability_remote_url(url: &Url) -> String {
+   // Fetch IPC supplies only Origin; postMessage supplies the document URL.
+   // authorize() still requires the main window's exact current /app URL.
+   format!("{}/*", url.origin().ascii_serialization())
+}
+
 fn supervise(app: AppHandle, state: Arc<HostState>) {
    let mut launches = 0u32;
    let mut failures = 0u32;
@@ -469,7 +476,7 @@ fn supervise(app: AppHandle, state: Arc<HostState>) {
             .window("main")
             .webview("main")
             .local(false)
-            .remote(url.to_string());
+            .remote(capability_remote_url(&url));
          for command in ALLOWED_COMMANDS {
             capability = capability.permission(format!("allow-{command}"));
          }
@@ -753,8 +760,9 @@ async fn set_transfer_active(
 
 #[cfg(test)]
 mod tests {
-   use super::{runtime_url, Runtime};
+   use super::{capability_remote_url, runtime_url, Runtime};
    use std::path::PathBuf;
+   use tauri::utils::acl::RemoteUrlPattern;
 
    fn runtime(local_url: &str, port: u16) -> Runtime {
       Runtime {
@@ -786,6 +794,33 @@ mod tests {
          assert!(
             runtime_url(&runtime(url, 8787)).is_err(),
             "Rejected URL: {url}"
+         );
+      }
+   }
+
+   #[test]
+   fn ipc_scope_accepts_both_fetch_origin_and_postmessage_document_url() {
+      let url = runtime_url(&runtime("http://127.0.0.1:8787", 8787)).unwrap();
+      let scope: RemoteUrlPattern = capability_remote_url(&url).parse().unwrap();
+      assert!(scope.test(&"http://127.0.0.1:8787/".parse().unwrap()));
+      assert!(scope.test(&url));
+   }
+
+   #[test]
+   fn ipc_scope_keeps_the_exact_loopback_host_scheme_and_port() {
+      let url = runtime_url(&runtime("http://127.0.0.1:8787", 8787)).unwrap();
+      let scope: RemoteUrlPattern = capability_remote_url(&url).parse().unwrap();
+      for other in [
+         "http://127.0.0.1:8788/app",
+         "http://192.0.2.1:8787/app",
+         "http://localhost:8787/app",
+         "https://127.0.0.1:8787/app",
+         "http://127.0.0.1.example.test:8787/app",
+         "http://tauri.localhost/",
+      ] {
+         assert!(
+            !scope.test(&other.parse().unwrap()),
+            "Rejected IPC origin: {other}"
          );
       }
    }

@@ -808,7 +808,9 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                   <input
                      ref={fileInputRef}
                      className="visually-hidden"
+                     disabled={Boolean(window.localFileTransfer?.chooseFiles)}
                      multiple
+                     tabIndex={-1}
                      type="file"
                      onChange={(event) => {
                         void addDesktopFiles(Array.from(event.currentTarget.files ?? []));
