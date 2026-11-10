@@ -9,27 +9,40 @@ const outboundBytes = fixture(512 * 1024 + 17, 7);
 const inboundBytes = fixture(1024 * 1024 + 67, 19);
 const resumableBytes = fixture(2 * 1024 * 1024 + 31, 29);
 const checkpointSize = 1024 * 1024;
+let operation = "read-input";
 
 class SmokeFailure extends Error {}
 
 try {
    let input = "";
+   process.stdin.setEncoding("utf8");
    for await (const chunk of process.stdin) {
       input += chunk;
       check(input.length <= 64 * 1024, "input-too-large");
    }
-   const settings = JSON.parse(input);
+   check(input.length > 0, "input-empty");
+   operation = "parse-input";
+   // .NET Framework may emit a UTF-8 preamble when it creates redirected stdin.
+   const settings = JSON.parse(input.replace(/^\uFEFF/u, ""));
+   check(settings && ["fixturePath", "statePath", "receiveDir"].every((key) => typeof settings[key] === "string" && settings[key].length > 0), "invalid-fixture-settings");
 
    if (phase === "prepare") {
+      operation = "write-fixture";
       await writeFile(settings.fixturePath, outboundBytes);
+      operation = "write-state";
       await writeFile(settings.statePath, JSON.stringify({ schemaVersion: 1 }));
       output({ prepared: true });
    } else {
+      operation = "exercise-http";
       await exercise(settings);
    }
 } catch (error) {
    // Never print a URL, credential, file path, response body, or file contents.
-   const code = error instanceof SmokeFailure ? error.message : "unexpected-protocol-error";
+   const fileErrors = ["ENOENT", "EACCES", "EPERM", "EEXIST", "ENOSPC", "EINVAL", "EISDIR", "ENOTDIR"];
+   const kind = error instanceof SyntaxError ? "syntax-error"
+      : error instanceof TypeError ? "type-error"
+         : fileErrors.includes(error?.code) ? error.code.toLowerCase() : "unexpected-error";
+   const code = error instanceof SmokeFailure ? error.message : operation + "-" + kind;
    process.stderr.write("WEBVIEW2_PROTOCOL_FAILURE=" + code + "\n");
    process.exitCode = 1;
 }

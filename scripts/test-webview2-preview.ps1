@@ -165,7 +165,14 @@ function Invoke-Protocol {
    $start.RedirectStandardInput = $true
    $start.RedirectStandardOutput = $true
    $start.RedirectStandardError = $true
-   $process = [Diagnostics.Process]::Start($start)
+   $script:ProtocolFailureCode = "protocol-child-start"
+   $previousInputEncoding = [Console]::InputEncoding
+   try {
+      # .NET Framework flushes the stdin encoding preamble during Process.Start.
+      [Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
+      $process = [Diagnostics.Process]::Start($start)
+   } finally { [Console]::InputEncoding = $previousInputEncoding }
+   $script:ProtocolFailureCode = $null
    $stdout = $process.StandardOutput.ReadToEndAsync()
    $stderr = $process.StandardError.ReadToEndAsync()
    $inputJson = @{

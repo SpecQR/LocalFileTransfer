@@ -43,6 +43,11 @@ jobs:
                  apps/web/package-lock.json
                  apps/desktop/package-lock.json
                  apps/webview2/package-lock.json
+         - name: Windows stdio の protocol fixture を先に検証
+           shell: pwsh
+           run: |
+              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1 -ProtocolPreflight
+              if ($LASTEXITCODE -ne 0) { throw "Windows protocol fixture preflight failed" }
          - name: 固定 Rust toolchain と両 target を install
            shell: pwsh
            run: |
@@ -68,11 +73,6 @@ jobs:
                  npm run $script
                  if ($LASTEXITCODE -ne 0) { throw "Source gate failed: $script" }
               }
-         - name: Windows stdio の protocol fixture を先に検証
-           shell: pwsh
-           run: |
-              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1 -ProtocolPreflight
-              if ($LASTEXITCODE -ne 0) { throw "Windows protocol fixture preflight failed" }
          - name: Browser と Electron E2E
            shell: pwsh
            run: |
@@ -138,6 +138,11 @@ jobs:
                  apps/web/package-lock.json
                  apps/desktop/package-lock.json
                  apps/webview2/package-lock.json
+         - name: Windows stdio の protocol fixture を先に検証
+           shell: pwsh
+           run: |
+              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1 -ProtocolPreflight
+              if ($LASTEXITCODE -ne 0) { throw "Windows protocol fixture preflight failed" }
          - name: 固定 Rust toolchain と両 target を install
            shell: pwsh
            run: |
@@ -163,11 +168,6 @@ jobs:
                  npm run $script
                  if ($LASTEXITCODE -ne 0) { throw "Source gate failed: $script" }
               }
-         - name: Windows stdio の protocol fixture を先に検証
-           shell: pwsh
-           run: |
-              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1 -ProtocolPreflight
-              if ($LASTEXITCODE -ne 0) { throw "Windows protocol fixture preflight failed" }
          - name: Browser と Electron E2E
            shell: pwsh
            run: |

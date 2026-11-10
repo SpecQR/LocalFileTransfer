@@ -44,7 +44,7 @@ ZIP 自体は配布サイズを小さくするために圧縮しています。�
 
 `apps/webview2/native` の Rust host は、ウィンドウ、ファイル選択、DPAPI による credential 保管、スリープ抑止、子プロセスの監視・終了を担当します。Rust はこの native host に限定した技術選択です。転送処理と bridge のソースは TypeScript で、既存 Electron 版も維持します。
 
-`apps/webview2/service` は Electron と共用の service runtime を、親子プロセス間の bounded JSON-lines protocol で呼び出します。標準出力は private RPC 専用です。credential は native host と service の間だけで保持し、renderer には既存 QR 用の一時 capability を含む bootstrap のみを渡します。DPAPI の復号ができない場合や保存データに問題がある場合は、既存データを黙って捨てず起動エラーを表示します。
+`apps/webview2/service` は Electron と共用の service runtime を、親子プロセス間の bounded JSON-lines protocol で呼び出します。標準出力は private RPC 専用です。保存用の credential 構造体は renderer に公開せず、native host が DPAPI で保管します。QR に含める room capability は従来どおり bootstrap の URL fragment で renderer に渡し、既存 HTTP endpoint で HttpOnly cookie と交換します。DPAPI の復号ができない場合や保存データに問題がある場合は、既存データを黙って捨てず起動エラーを表示します。
 
 native command は main window と現在の loopback `/app` の origin を検証します。LAN 側のページに native bridge の権限は付与しません。外部ページへの移動、新規ウィンドウ、不要な WebView 権限を許可しない構成です。Electron の sandbox / isolation / fuse 設定は変更しません。
 
