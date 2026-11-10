@@ -16,6 +16,11 @@ const skippedDirectories = new Set([
    "release-assets",
    "test-results"
 ]);
+const skippedGeneratedPaths = new Set([
+   "apps/webview2/.cache",
+   "apps/webview2/native/target",
+   "apps/webview2/release"
+]);
 const forbiddenNames = new Set([
    ".DS_Store",
    "WORKLOG.md",
@@ -39,9 +44,12 @@ const textExtensions = new Set([
    ".html",
    ".js",
    ".json",
+   ".lock",
    ".md",
    ".mjs",
    ".ps1",
+   ".rs",
+   ".toml",
    ".ts",
    ".tsx",
    ".txt",
@@ -108,6 +116,10 @@ async function walk(directory) {
       }
 
       const path = join(directory, entry.name);
+
+      if (entry.isDirectory() && skippedGeneratedPaths.has(normalize(relative(root, path)))) {
+         continue;
+      }
 
       if (entry.isDirectory()) {
          await walk(path);

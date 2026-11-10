@@ -231,7 +231,7 @@ test("packaged smoke and startup comparison PowerShell parse before release", ()
    const scriptsDir = dirname(fileURLToPath(import.meta.url));
    const smokePath = join(scriptsDir, "test-packaged-windows.ps1");
 
-   for (const scriptName of ["test-packaged-windows.ps1", "compare-portable-startup.ps1"]) {
+   for (const scriptName of ["test-packaged-windows.ps1", "compare-portable-startup.ps1", "test-webview2-preview.ps1"]) {
       execFileSync("powershell.exe", [
          "-NoProfile",
          "-NonInteractive",
@@ -320,6 +320,19 @@ test("release and startup workflow PowerShell blocks parse before a tag is pushe
             "両 architecture の PE と fuse を検証",
             "x64 起動時間と packaged recovery を比較",
             "圧縮ありと無圧縮の x64 起動時間を比較"
+         ]
+      },
+      {
+         name: "webview2-preview.yml",
+         steps: [
+            "固定 Rust toolchain と両 target を install",
+            "全 npm scope を install",
+            "Source gate と build",
+            "Browser と Electron E2E",
+            "両 architecture の ZIP を build",
+            "実際の x64 ZIP から native UI と転送と復旧を検証",
+            "両 PE と配布 ZIP の evidence を照合",
+            "新しい prerelease に exact ZIP と evidence を公開"
          ]
       }
    ];

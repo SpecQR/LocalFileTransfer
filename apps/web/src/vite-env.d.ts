@@ -26,6 +26,8 @@ interface Window {
       resizeToContent(size: { height: number }): void;
       roomBootstrap(): Promise<import("../../../apps/desktop/src/serviceProtocol.ts").DesktopRoomBootstrap>;
       addFiles(files: File[]): Promise<import("../../../packages/protocol/src/index.ts").RoomView>;
+      chooseFiles?(): Promise<import("../../../packages/protocol/src/index.ts").RoomView | null>;
+      readonly nativeFileDrop?: boolean;
       resetRoom(): Promise<import("../../../apps/desktop/src/serviceProtocol.ts").DesktopRoomBootstrap>;
       setTransferActive(active: boolean): void;
       showReceivedFile(roomId: string, itemId: string): Promise<void>;

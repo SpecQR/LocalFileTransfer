@@ -15,7 +15,8 @@
       "url": "https://github.com/SpecQR/LocalFileTransfer/issues"
    },
    "scripts": {
-      "build": "npm run build --prefix apps/server && npm run build --prefix apps/web && npm run build --prefix apps/desktop",
+      "build": "npm run build --prefix apps/server && npm run build --prefix apps/web && npm run build --prefix apps/desktop && npm run build:webview2",
+      "build:webview2": "npm run build --prefix apps/webview2",
       "build:web": "npm run build --prefix apps/web",
       "build:desktop": "npm run build --prefix apps/desktop",
       "dev:web": "npm run dev --prefix apps/web",
@@ -32,7 +33,8 @@
       "test:visual": "node scripts/capture-scale-screenshots.mjs",
       "test:packaged": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-packaged-windows.ps1",
       "test": "node --test \"packages/**/*.test.ts\"",
-      "test:all": "npm test && npm run test:release && npm run test:server && npm run test:web",
+      "test:all": "npm test && npm run test:release && npm run test:server && npm run test:web && npm run test:webview2",
+      "test:webview2": "npm test --prefix apps/webview2",
       "test:server": "npm run test --prefix apps/server",
       "test:web": "npm run test --prefix apps/web",
       "test:e2e": "npm run build && tsc -p tsconfig.e2e.json && node scripts/run-e2e.mjs",

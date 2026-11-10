@@ -35,6 +35,18 @@ Local File Transfer は、Windows 上で一時的な双方向 transfer room を 
 
 ## Module ownership
 
+### WebView2 比較試作（通常版とは別配布）
+
+ユーザー承認の起動高速化試作は `apps/webview2` に隔離しています。Tauri 2 / WebView2 の Rust native host と Node.js SEA service、既存 React UI を使用し、一度展開する ZIP として配布します。Rust と ZIP フォルダーはこの比較試作だけの技術・配布上の例外です。通常版の Electron Portable、既存保存領域、固定 SpecQR を変更する判断ではありません。詳細、制約、検証・prerelease 手順は `docs/WEBVIEW2_PREVIEW.md` を参照してください。
+
+- `native`: ウィンドウ / origin 検証、native picker / drop、DPAPI、子プロセス監視・終了。
+- `service`: 共用 `apps/desktop/src/serviceRuntime.ts` を呼ぶ bounded stdio RPC adapter。
+- `bridge.ts`: loopback `/app` のみへ注入する desktop API と既存 HTTP cookie 認可。
+- `preview.json`: 通常版とは独立したバージョン、固定 Node.js / Rust toolchain。
+- `scripts/build.mjs`: bridge / service bundle、SEA / native build、license inventory、配布 ZIP。
+
+試作版の起動時間・サイズは公開 Release の実測証跡を根拠にし、x64 の実動作検証と ARM64 の静的検証を混同しません。
+
 ### `apps/desktop`
 
 - `main.ts`: BrowserWindow policy、single instance、native dialog、`safeStorage`、power-save blocker、Utility Process supervision、Room lifecycle queue、expiry rotation、window geometry
