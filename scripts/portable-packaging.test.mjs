@@ -76,6 +76,26 @@ test("Portable workaround is inactive for non-Windows packaging", () => {
    assert.equal(preparePortable({ electronPlatformName: "linux" }), undefined);
 });
 
+test("startup workflow passes baseline overrides as configuration, not a file path", () => {
+   const workflow = readFileSync(new URL("../.github/workflows/portable-startup.yml", import.meta.url), "utf8");
+   const command = workflow.match(/^\s+npx --no-install electron-builder (.+)$/mu);
+
+   assert.ok(command, "The comparison must build a baseline artifact");
+   const { configureBuildCommand, normalizeOptions } = desktopRequire("electron-builder/out/builder.js");
+   const yargs = desktopRequire("yargs/yargs");
+   const parsed = configureBuildCommand(yargs(command[1].trim().split(/\s+/u)))
+      .parserConfiguration({ "camel-case-expansion": false })
+      .exitProcess(false)
+      .strict()
+      .parseSync();
+   const options = normalizeOptions(parsed);
+
+   assert.equal(typeof options.config, "object");
+   assert.ok(options.config.portable.useZip === false || options.config.portable.useZip === "false");
+   assert.equal(options.config.directories.output, "release/baseline");
+   assert.equal(options.publish, "never");
+});
+
 function sha256(source) {
    return createHash("sha256").update(source).digest("hex");
 }

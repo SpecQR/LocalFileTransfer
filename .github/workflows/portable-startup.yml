@@ -65,7 +65,7 @@ jobs:
            working-directory: apps/desktop
            shell: pwsh
            run: |
-              npx --no-install electron-builder --win portable --x64 --publish never -c.portable.useZip=false -c.directories.output=release/baseline
+              npx --no-install electron-builder --win portable --x64 --publish never --config.portable.useZip=false --config.directories.output=release/baseline
               if ($LASTEXITCODE -ne 0) { throw "Baseline Portable build failed" }
          - name: 高速展開版を両 architecture で build
            shell: pwsh

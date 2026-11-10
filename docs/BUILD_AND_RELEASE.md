@@ -87,7 +87,7 @@ Hook は `app-builder-lib` の version と template 全体の SHA-256 を照合�
 
 #### 同一 source の起動比較
 
-`.github/workflows/portable-startup.yml` は関連 source の Pull Request で、Windows 2022 runner 上の E2E、従来の 7z 方式、変更後の x64 / ARM64 build、PE / fuse check を実行します。比較用 baseline だけ `-c.portable.useZip=false` を指定し、runtime と dependency の差が結果に混ざらないようにします。
+`.github/workflows/portable-startup.yml` は関連 source の Pull Request で、Windows 2022 runner 上の E2E、従来の 7z 方式、変更後の x64 / ARM64 build、PE / fuse check を実行します。比較用 baseline だけ `--config.portable.useZip=false` を指定し、runtime と dependency の差が結果に混ざらないようにします。
 
 `scripts/compare-portable-startup.ps1` は baseline と optimized の EXE path を受け取り、それぞれ 1 回の warm-up 後に 3 回ずつ順番を交互にして実行します。各回は新しい隔離 storage を使い、起動後に既存 packaged smoke の service recovery と graceful shutdown も検証します。
 

@@ -23,7 +23,7 @@ Local File Transfer は、Windows 上で一時的な双方向 transfer room を 
 ## 固定した技術判断
 
 - TypeScript、3-space indentation
-- Self-contained Windows shell として Electron 43.7.7
+- Self-contained Windows shell として Electron 43.8.7
 - Electron Utility Process 内の Fastify 5
 - Desktop/browser UI は React 18 と Vite 6
 - 次回 Portable build は `useZip: true` / `compression: normal` による NSIS zlib direct extraction。固定した app-builder-lib 26.15.3 の ARM64-only template 不備は、version と全文 SHA-256 を検証する `prepare-portable.cjs` の `beforePack` hook で補う。Dependency 更新時は [ビルドとリリース](BUILD_AND_RELEASE.md) の workaround を再確認する

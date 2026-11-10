@@ -19,8 +19,9 @@
 
 ### 依存関係
 
-- 更新時点の必須 dependency audit に対応し、Electron 43.0.0 を同じ 43 系の 43.7.7 に更新しました。
+- 更新時点の必須 dependency audit に対応し、Electron 43.0.0 を同じ 43 系の 43.8.7 に更新しました。
 - Fastify 5.12.5 と fast-uri の修正版、Browserslist 系と packaging tool の修正版を lockfile に反映しました。メジャーアップグレードの強制や audit gate の緩和は行っていません。
+- 起動改善時の必須 audit に合わせ、Vite を 6.4.6、source-map-js を 1.2.2、build tool の undici を 6.29.1 / 7.30.1 へ更新しました。Electron、Vite、undici は MIT、source-map-js は BSD-3-Clause を維持します。Portable workaround の対象である electron-builder / app-builder-lib 26.15.3 は変更していません。
 
 ### Release engineering
 
