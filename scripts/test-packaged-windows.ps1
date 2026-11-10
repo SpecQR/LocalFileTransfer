@@ -155,6 +155,75 @@ function Wait-HttpClosed {
       return $false
    }
 }
+
+function Wait-DesktopConnected {
+   # Probe the real rendered status, not just the HTTP service or an empty window.
+   # UI Automation is requested only after the startup clock has stopped.
+   Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+   $english = [System.Windows.Automation.PropertyCondition]::new(
+      [System.Windows.Automation.AutomationElement]::NameProperty,
+      "Connected"
+   )
+   # Code points keep the Japanese status portable to Windows PowerShell 5.1's
+   # source encoding without introducing a BOM into this script.
+   $japaneseStatus = -join [char[]]@(0x63A5, 0x7D9A, 0x6E08, 0x307F)
+   $japanese = [System.Windows.Automation.PropertyCondition]::new(
+      [System.Windows.Automation.AutomationElement]::NameProperty,
+      $japaneseStatus
+   )
+   $connected = [System.Windows.Automation.OrCondition]::new($english, $japanese)
+   $script:DesktopReadinessProbeError = $null
+
+   try {
+      Wait-Until -Description "connected desktop UI before service interruption" -TimeoutSeconds 45 -Condition {
+         $main = Get-TestProcesses | Where-Object {
+            $_.Name -eq "Local File Transfer.exe" -and $_.CommandLine -notmatch "--type="
+         } | Select-Object -First 1
+
+         if (-not $main) {
+            return $false
+         }
+
+         try {
+            $mainProcess = [Diagnostics.Process]::GetProcessById([int]$main.ProcessId)
+            $mainProcess.Refresh()
+            $handle = $mainProcess.MainWindowHandle
+
+            if ($handle -eq [IntPtr]::Zero) {
+               return $false
+            }
+
+            $window = [System.Windows.Automation.AutomationElement]::FromHandle($handle)
+
+            if ($null -eq $window -or $window.Current.ProcessId -ne [int]$main.ProcessId) {
+               return $false
+            }
+
+            # Never enumerate or log the tree: the live QR can contain a capability.
+            $status = $window.FindFirst(
+               [System.Windows.Automation.TreeScope]::Descendants,
+               $connected
+            )
+            $script:DesktopReadinessProbeError = $null
+            return $null -ne $status
+         } catch {
+            # Windows/Chromium may replace the provider while the UI loads.
+            # Retry until the deadline; no sleep-only readiness fallback is used.
+            $script:DesktopReadinessProbeError = $_.Exception.GetType().Name
+            return $false
+         }
+      }
+   } catch {
+      $suffix = if ($script:DesktopReadinessProbeError) {
+         " Last UI Automation error type: $script:DesktopReadinessProbeError"
+      } else {
+         ""
+      }
+
+      throw ($_.Exception.Message + $suffix)
+   }
+}
+
 $Root = Split-Path -Parent $PSScriptRoot
 $Version = (Get-Content -LiteralPath (Join-Path $Root "package.json") -Raw | ConvertFrom-Json).version
 $EvidenceLabel = if ($Version -match "-rc\.(\d+)$") { "RC" + $Matches[1] } else { $Version -replace "[^A-Za-z0-9]", "_" }
@@ -228,6 +297,8 @@ try {
    Wait-Until -Description "SQLite room database" -TimeoutSeconds 30 -Condition {
       Test-Path -LiteralPath (Join-Path $Storage "rooms.sqlite")
    }
+   Wait-DesktopConnected
+   $DesktopReadyBeforeInterruption = $true
    $BeforeProcesses = @(Get-TestProcesses)
    $Utility = $BeforeProcesses | Where-Object {
       $_.CommandLine -match "node\.mojom\.NodeService"
@@ -305,6 +376,8 @@ try {
       initialAppStatus = [int]$App.StatusCode
       processCountBeforeInterruption = $BeforeProcesses.Count
       utilityInterruptionInjected = $true
+      desktopReadyBeforeInterruption = $DesktopReadyBeforeInterruption
+      desktopReadinessProbe = "windows-ui-automation-connected-status"
       gpuDisabledForSmoke = $true
       httpProbe = "curl-ipv4-direct"
       loopbackOnlyForSmoke = $true

@@ -64,6 +64,7 @@ function Invoke-StartupSample {
       -or $evidence.initialAppStatus -ne 200 `
       -or $evidence.recoveredHealthStatus -ne 200 `
       -or $evidence.recoveredAppStatus -ne 200 `
+      -or $evidence.desktopReadyBeforeInterruption -ne $true `
       -or -not $evidence.gracefulWindowClose `
       -or -not $evidence.endpointClosed `
       -or $evidence.residualProcesses -ne 0
@@ -84,6 +85,17 @@ function Invoke-StartupSample {
       round = $Round
       variant = $Variant
    })
+   $sampleSummary = [ordered]@{
+      phase = $Phase
+      round = $Round
+      variant = $Variant
+      serviceReadySeconds = $evidence.serviceReadySeconds
+      healthReadySeconds = $evidence.healthReadySeconds
+      appHttpReadySeconds = $evidence.appHttpReadySeconds
+      length = $evidence.length
+      sha256 = $evidence.sha256
+   }
+   Write-Host ("STARTUP_SAMPLE=" + ($sampleSummary | ConvertTo-Json -Depth 4 -Compress))
 
    if ($Phase -eq "measured") {
       $Results[$Variant].Add($evidence)
@@ -141,6 +153,7 @@ foreach ($variant in @("baseline", "optimized")) {
             serviceReadySeconds = $_.serviceReadySeconds
             healthReadySeconds = $_.healthReadySeconds
             appHttpReadySeconds = $_.appHttpReadySeconds
+            desktopReadyBeforeInterruption = $true
             packagedRecoveryPassed = $true
             gracefulShutdownPassed = $true
          }
@@ -171,6 +184,7 @@ $report = [ordered]@{
    gpuDisabledForSmoke = $true
    loopbackOnlyForSmoke = $true
    freshStorageEachRun = $true
+   desktopReadinessProbe = "windows-ui-automation-connected-status-after-startup-clock-stops"
    rendererReadyMeasured = $false
    coldBootMeasured = $false
    arm64RuntimeMeasured = $false

@@ -135,11 +135,12 @@ jobs:
                  -Samples 3
 
          - name: 起動比較と static evidence だけを保存
+           if: always()
            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
            with:
               name: Portable-startup-evidence
               path: |
                  test-results/portable-startup/STARTUP_COMPARISON.json
                  test-results/portable-startup/PACKAGING_VALIDATION.json
-              if-no-files-found: error
+              if-no-files-found: ignore
               retention-days: 14

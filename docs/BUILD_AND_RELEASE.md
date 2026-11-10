@@ -89,7 +89,7 @@ Hook は `app-builder-lib` の version と template 全体の SHA-256 を照合�
 
 `.github/workflows/portable-startup.yml` は関連 source の Pull Request で、Windows 2022 runner 上の E2E、従来の 7z 方式、変更後の x64 / ARM64 build、PE / fuse check を実行します。比較用 baseline だけ `--config.portable.useZip=false` を指定し、runtime と dependency の差が結果に混ざらないようにします。
 
-`scripts/compare-portable-startup.ps1` は baseline と optimized の EXE path を受け取り、それぞれ 1 回の warm-up 後に 3 回ずつ順番を交互にして実行します。各回は新しい隔離 storage を使い、起動後に既存 packaged smoke の service recovery と graceful shutdown も検証します。
+`scripts/compare-portable-startup.ps1` は baseline と optimized の EXE path を受け取り、それぞれ 1 回の warm-up 後に 3 回ずつ順番を交互にして実行します。各回は新しい隔離 storage を使い、起動後に既存 packaged smoke の service recovery と graceful shutdown も検証します。起動時間の計測終了後、隔離したメインウィンドウ内の `Connected` / `接続済み` を Windows UI Automation で確認してから service を停止します。初回の画面読み込みを故障注入で中断する競合を避け、起動済みアプリの復旧を検証します。UI tree や QR の値は出力しません。
 
 計測の開始点は `Start-Process` 直前の Stopwatch です。最初の `service-ready` log の観測、`/healthz` の HTTP 200、`/app` の HTTP 200 を別々の秒数として記録します。Polling 間隔は 200 ms であり、画面や QR の描画完了、OS の cold boot、物理 Windows on ARM の時間は測っていません。従来の smoke evidence の `launchSeconds` は復旧試験開始までの時間を含むため、起動性能の比較には使用しません。
 
