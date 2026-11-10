@@ -89,11 +89,13 @@ Hook は `app-builder-lib` の version と template 全体の SHA-256 を照合�
 
 `.github/workflows/portable-startup.yml` は関連 source の Pull Request で、Windows 2022 runner 上の E2E、従来の 7z 方式、変更後の x64 / ARM64 build、PE / fuse check を実行します。比較用 baseline だけ `--config.portable.useZip=false` を指定し、runtime と dependency の差が結果に混ざらないようにします。
 
+同じ workflow で `--config.portable.useZip=true --config.compression=store` を指定した無圧縮の x64 EXE も生成し、直接展開の `normal` / `store` を追加比較します。固定した builder の `store` は NSIS の `SetCompress off` を選び、解凍の計算を省きます。無圧縮でも内蔵ファイルを一時フォルダーへ書き出す処理と Electron の初期化は必要です。配布 EXE から読むデータ量は増えるため、無圧縮の方が必ず速いとは扱いません。既定の配布設定は `normal` のままです。
+
 `scripts/compare-portable-startup.ps1` は baseline と optimized の EXE path を受け取り、それぞれ 1 回の warm-up 後に 3 回ずつ順番を交互にして実行します。各回は新しい隔離 storage を使い、起動後に既存 packaged smoke の service recovery と graceful shutdown も検証します。起動時間の計測終了後、隔離したメインウィンドウ内の `Connected` / `接続済み` を Windows UI Automation で確認してから service を停止します。初回の画面読み込みを故障注入で中断する競合を避け、起動済みアプリの復旧を検証します。UI tree や QR の値は出力しません。
 
 計測の開始点は `Start-Process` 直前の Stopwatch です。最初の `service-ready` log の観測、`/healthz` の HTTP 200、`/app` の HTTP 200 を別々の秒数として記録します。Polling 間隔は 200 ms であり、画面や QR の描画完了、OS の cold boot、物理 Windows on ARM の時間は測っていません。従来の smoke evidence の `launchSeconds` は復旧試験開始までの時間を含むため、起動性能の比較には使用しません。
 
-Workflow はサイズ、SHA-256、各回の秒数、中央値、測定条件を含む `STARTUP_COMPARISON.json` と `PACKAGING_VALIDATION.json` だけを Actions artifact に保存します。EXE の公開は従来の tag-driven release workflow が担当します。Benchmark が通っただけで release gate や物理端末の確認を完了したとは扱いません。
+Workflow はサイズ、SHA-256、各回の秒数、中央値、測定条件を含む `STARTUP_COMPARISON.json` と `PACKAGING_VALIDATION.json` だけを Actions artifact に保存します。従来方式との比較は `test-results/portable-startup`、`normal` / `store` の比較は `test-results/portable-startup-uncompressed` に分け、各 variant の展開経路と圧縮設定を明記します。EXE の公開は従来の tag-driven release workflow が担当します。Benchmark が通っただけで release gate や物理端末の確認を完了したとは扱いません。
 
 ## Electron security gate
 

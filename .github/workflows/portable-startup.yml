@@ -74,6 +74,12 @@ jobs:
               if ($LASTEXITCODE -ne 0) { throw "Optimized x64 Portable build failed" }
               npm run dist:windows:arm64
               if ($LASTEXITCODE -ne 0) { throw "Optimized ARM64 Portable build failed" }
+         - name: 同一 source の無圧縮 x64 版を build
+           working-directory: apps/desktop
+           shell: pwsh
+           run: |
+              npx --no-install electron-builder --win portable --x64 --publish never --config.compression=store --config.portable.useZip=true --config.directories.output=release/uncompressed
+              if ($LASTEXITCODE -ne 0) { throw "Uncompressed x64 Portable build failed" }
 
          - name: 両 architecture の PE と fuse を検証
            shell: pwsh
@@ -82,10 +88,12 @@ jobs:
               $version = (Get-Content -LiteralPath "package.json" -Raw | ConvertFrom-Json).version
               $results = @()
               foreach ($entry in @(
-                 @{ architecture = "x64"; directory = "win-unpacked"; machine = 0x8664 },
-                 @{ architecture = "arm64"; directory = "win-arm64-unpacked"; machine = 0xAA64 }
+                 @{ architecture = "x64"; output = "."; directory = "win-unpacked"; machine = 0x8664; compression = "normal" },
+                 @{ architecture = "arm64"; output = "."; directory = "win-arm64-unpacked"; machine = 0xAA64; compression = "normal" },
+                 @{ architecture = "x64"; output = "uncompressed"; directory = "win-unpacked"; machine = 0x8664; compression = "store" }
               )) {
-                 $executable = Join-Path "apps/desktop/release" (Join-Path $entry.directory "Local File Transfer.exe")
+                 $releaseRoot = Join-Path "apps/desktop/release" $entry.output
+                 $executable = Join-Path $releaseRoot (Join-Path $entry.directory "Local File Transfer.exe")
                  $bytes = [IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $executable).Path)
                  if ($bytes.Length -lt 64 -or [Text.Encoding]::ASCII.GetString($bytes, 0, 2) -ne "MZ") {
                     throw "Invalid PE DOS header"
@@ -99,10 +107,12 @@ jobs:
                  $fuseJson = node apps/desktop/scripts/verify-fuses.cjs $executable
                  if ($LASTEXITCODE -ne 0) { throw "Electron fuse validation failed" }
                  $artifactName = "Local.File.Transfer-$version-$($entry.architecture)-Portable.exe"
-                 $inspectionJson = node scripts/inspect-release-artifact.mjs (Join-Path "apps/desktop/release" $artifactName)
+                 $inspectionJson = node scripts/inspect-release-artifact.mjs (Join-Path $releaseRoot $artifactName)
                  if ($LASTEXITCODE -ne 0) { throw "Portable artifact inspection failed" }
                  $results += [ordered]@{
                     architecture = $entry.architecture
+                    portableUseZip = $true
+                    compression = $entry.compression
                     artifact = $artifactName
                     peMachine = "0x{0:X4}" -f $machine
                     fuses = ($fuseJson | ConvertFrom-Json)
@@ -132,6 +142,21 @@ jobs:
               & ./scripts/compare-portable-startup.ps1 `
                  -BaselineArtifact "apps/desktop/release/baseline/$artifactName" `
                  -OptimizedArtifact "apps/desktop/release/$artifactName" `
+                 -BaselinePackaging 7z -BaselineCompression normal `
+                 -OptimizedPackaging direct -OptimizedCompression normal `
+                 -Samples 3
+
+         - name: 圧縮ありと無圧縮の x64 起動時間を比較
+           shell: pwsh
+           run: |
+              $version = (Get-Content -LiteralPath "package.json" -Raw | ConvertFrom-Json).version
+              $artifactName = "Local.File.Transfer-$version-x64-Portable.exe"
+              & ./scripts/compare-portable-startup.ps1 `
+                 -BaselineArtifact "apps/desktop/release/$artifactName" `
+                 -OptimizedArtifact "apps/desktop/release/uncompressed/$artifactName" `
+                 -BaselinePackaging direct -BaselineCompression normal `
+                 -OptimizedPackaging direct -OptimizedCompression store `
+                 -EvidenceDirectory "test-results/portable-startup-uncompressed" `
                  -Samples 3
 
          - name: 起動比較と static evidence だけを保存
@@ -142,5 +167,6 @@ jobs:
               path: |
                  test-results/portable-startup/STARTUP_COMPARISON.json
                  test-results/portable-startup/PACKAGING_VALIDATION.json
+                 test-results/portable-startup-uncompressed/STARTUP_COMPARISON.json
               if-no-files-found: ignore
               retention-days: 14

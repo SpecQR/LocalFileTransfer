@@ -316,8 +316,10 @@ test("release and startup workflow PowerShell blocks parse before a tag is pushe
             "Browser と Electron E2E",
             "同一 source の既存 7z 方式を build",
             "高速展開版を両 architecture で build",
+            "同一 source の無圧縮 x64 版を build",
             "両 architecture の PE と fuse を検証",
-            "x64 起動時間と packaged recovery を比較"
+            "x64 起動時間と packaged recovery を比較",
+            "圧縮ありと無圧縮の x64 起動時間を比較"
          ]
       }
    ];

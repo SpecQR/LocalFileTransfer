@@ -2,7 +2,11 @@ param(
    [Parameter(Mandatory)] [string] $BaselineArtifact,
    [Parameter(Mandatory)] [string] $OptimizedArtifact,
    [ValidateRange(1, 10)] [int] $Samples = 3,
-   [string] $EvidenceDirectory = ""
+   [string] $EvidenceDirectory = "",
+   [ValidateSet("7z", "direct")] [string] $BaselinePackaging = "7z",
+   [ValidateSet("7z", "direct")] [string] $OptimizedPackaging = "direct",
+   [ValidateSet("normal", "store")] [string] $BaselineCompression = "normal",
+   [ValidateSet("normal", "store")] [string] $OptimizedCompression = "normal"
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,6 +21,17 @@ $Artifacts = @{
    baseline = [IO.Path]::GetFullPath($BaselineArtifact)
    optimized = [IO.Path]::GetFullPath($OptimizedArtifact)
 }
+# The caller supplies the configuration used to build each artifact. Keep these
+# labels independent of the baseline/optimized roles when comparing compression.
+$Packaging = @{
+   baseline = $BaselinePackaging
+   optimized = $OptimizedPackaging
+}
+$Compression = @{
+   baseline = $BaselineCompression
+   optimized = $OptimizedCompression
+}
+$ComparisonId = "$BaselinePackaging-$BaselineCompression-vs-$OptimizedPackaging-$OptimizedCompression"
 $Results = @{
    baseline = [Collections.Generic.List[object]]::new()
    optimized = [Collections.Generic.List[object]]::new()
@@ -86,9 +101,12 @@ function Invoke-StartupSample {
       variant = $Variant
    })
    $sampleSummary = [ordered]@{
+      comparisonId = $ComparisonId
       phase = $Phase
       round = $Round
       variant = $Variant
+      packaging = $Packaging[$Variant]
+      compression = $Compression[$Variant]
       serviceReadySeconds = $evidence.serviceReadySeconds
       healthReadySeconds = $evidence.healthReadySeconds
       appHttpReadySeconds = $evidence.appHttpReadySeconds
@@ -144,7 +162,9 @@ foreach ($variant in @("baseline", "optimized")) {
       artifact = $first.artifact
       sha256 = $first.sha256
       length = $first.length
-      portableUseZip = $variant -eq "optimized"
+      packaging = $Packaging[$variant]
+      portableUseZip = $Packaging[$variant] -eq "direct"
+      compression = $Compression[$variant]
       serviceReadyMedianSeconds = [math]::Round((Get-Median -Values @($runs | ForEach-Object serviceReadySeconds)), 3)
       healthReadyMedianSeconds = [math]::Round((Get-Median -Values @($runs | ForEach-Object healthReadySeconds)), 3)
       appHttpReadyMedianSeconds = [math]::Round((Get-Median -Values @($runs | ForEach-Object appHttpReadySeconds)), 3)
@@ -172,6 +192,8 @@ $report = [ordered]@{
    runnerImage = $env:ImageOS
    runnerImageVersion = $env:ImageVersion
    comparison = "same-source-packaging-only"
+   comparisonId = $ComparisonId
+   configurationSource = "explicit-comparison-parameters"
    architecture = "x64"
    warmupRunsPerVariant = 1
    measuredRunsPerVariant = $Samples
