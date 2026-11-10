@@ -1,0 +1,17 @@
+{
+   "name": "local-file-transfer-webview2-preview",
+   "version": "0.1.0",
+   "private": true,
+   "type": "module",
+   "license": "MIT",
+   "scripts": {
+      "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json && node scripts/build.mjs --bundle-only",
+      "test": "node --test \"service/src/**/*.test.ts\" \"*.test.ts\"",
+      "dist:x64": "node scripts/build.mjs --arch x64",
+      "dist:arm64": "node scripts/build.mjs --arch arm64"
+   },
+   "devDependencies": {
+      "esbuild": "0.28.0",
+      "postject": "1.0.0-alpha.6"
+   }
+}

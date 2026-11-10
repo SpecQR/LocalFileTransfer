@@ -21,6 +21,7 @@ export interface AppDeps {
    sessions?: LocalLanSessionStore;
    rooms?: RoomStore;
    enableLegacyRoutes?: boolean;
+   httpLogging?: boolean | undefined;
    onError?: (error: unknown, context: { method: string; statusCode: number }) => void;
    getDiagnostics?: () => Promise<RoomDiagnosticSnapshot>;
 }
@@ -28,7 +29,7 @@ export interface AppDeps {
 export async function buildApp(deps: AppDeps = {}): Promise<FastifyInstance> {
    const config = deps.config ?? loadConfig();
    const app = Fastify({
-      logger: {
+      logger: deps.httpLogging === false ? false : {
          redact: [
             "req.headers.authorization",
             "req.headers.cookie",

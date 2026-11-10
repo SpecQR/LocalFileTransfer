@@ -1,0 +1,297 @@
+name: WebView2 preview を検証
+
+on:
+   pull_request:
+      paths:
+         - ".github/workflows/webview2-preview.yml"
+         - "apps/**"
+         - "packages/**"
+         - "scripts/**"
+         - "tests/**"
+         - "package*.json"
+         - "docs/WEBVIEW2_PREVIEW.md"
+   push:
+      branches: [release/webview2-preview]
+      tags: [webview2-preview-v*]
+   workflow_dispatch:
+
+permissions:
+   contents: read
+
+concurrency:
+   group: webview2-preview-${{ github.ref }}
+   cancel-in-progress: false
+
+jobs:
+   verify:
+      name: WebView2 preview の source と両 architecture を検証
+      if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+      runs-on: windows-2022
+      timeout-minutes: 90
+      steps:
+         - name: Source を checkout
+           uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+           with:
+              ref: ${{ github.event.pull_request.head.sha || github.sha }}
+         - name: Node.js を設定
+           uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+           with:
+              node-version: "24.22.1"
+              cache: npm
+              cache-dependency-path: |
+                 package-lock.json
+                 apps/server/package-lock.json
+                 apps/web/package-lock.json
+                 apps/desktop/package-lock.json
+                 apps/webview2/package-lock.json
+         - name: Windows stdio の protocol fixture を先に検証
+           shell: pwsh
+           run: |
+              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1 -ProtocolPreflight
+              if ($LASTEXITCODE -ne 0) { throw "Windows protocol fixture preflight failed" }
+         - name: 固定 Rust toolchain と両 target を install
+           shell: pwsh
+           run: |
+              $manifest = Get-Content -LiteralPath apps/webview2/preview.json -Raw | ConvertFrom-Json
+              if ($manifest.nodeVersion -ne "24.22.1" -or $manifest.rustVersion -ne "1.99.1") {
+                 throw "Review the workflow when changing preview toolchains"
+              }
+              rustup toolchain install 1.99.1 --profile minimal --target x86_64-pc-windows-msvc --target aarch64-pc-windows-msvc
+              if ($LASTEXITCODE -ne 0) { throw "Rust toolchain install failed" }
+         - name: 全 npm scope を install
+           shell: pwsh
+           run: |
+              foreach ($scope in @(".", "apps/server", "apps/web", "apps/desktop", "apps/webview2")) {
+                 npm ci --prefix $scope
+                 if ($LASTEXITCODE -ne 0) { throw "Dependency install failed: $scope" }
+                 npm audit --prefix $scope --audit-level=high
+                 if ($LASTEXITCODE -ne 0) { throw "Dependency audit failed: $scope" }
+              }
+         - name: Source gate と build
+           shell: pwsh
+           run: |
+              foreach ($script in @("audit:public", "test:all", "build")) {
+                 npm run $script
+                 if ($LASTEXITCODE -ne 0) { throw "Source gate failed: $script" }
+              }
+         - name: Browser と Electron E2E
+           shell: pwsh
+           run: |
+              npx playwright install chromium webkit
+              if ($LASTEXITCODE -ne 0) { throw "Browser install failed" }
+              npm run test:e2e
+              if ($LASTEXITCODE -ne 0) { throw "Browser and Electron E2E failed" }
+         - name: x64 の ZIP を build
+           shell: pwsh
+           run: |
+              node apps/webview2/scripts/build.mjs --arch x64
+              if ($LASTEXITCODE -ne 0) { throw "x64 preview build failed" }
+         - name: Native credential と loopback の boundary を検証
+           working-directory: apps/webview2/native
+           shell: pwsh
+           run: |
+              cargo +1.99.1 test --locked --release --target x86_64-pc-windows-msvc
+              if ($LASTEXITCODE -ne 0) { throw "Native boundary tests failed" }
+         - name: 実際の x64 ZIP から native UI と転送と復旧を検証
+           shell: pwsh
+           run: |
+              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1
+              if ($LASTEXITCODE -ne 0) { throw "Packaged WebView2 preview smoke failed" }
+         - name: ARM64 の ZIP を build
+           shell: pwsh
+           run: |
+              node apps/webview2/scripts/build.mjs --arch arm64
+              if ($LASTEXITCODE -ne 0) { throw "ARM64 preview build failed" }
+         - name: 両 PE と配布 ZIP の evidence を照合
+           shell: pwsh
+           run: |
+              node scripts/test-webview2-preview-static.mjs
+              if ($LASTEXITCODE -ne 0) { throw "Preview static/evidence validation failed" }
+         - name: 秘密を含まない検証 evidence だけを保存
+           if: always()
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+              name: WebView2-preview-evidence-verify
+              path: |
+                 test-results/webview2-preview/WEBVIEW2_SMOKE.json
+                 test-results/webview2-preview/WEBVIEW2_SMOKE_FAILURE.json
+                 test-results/webview2-preview/WEBVIEW2_PREVIEW_EVIDENCE.json
+                 test-results/webview2-preview/SHA256SUMS.txt
+              if-no-files-found: ignore
+              retention-days: 14
+
+   publish:
+      name: 試作版の実 ZIP を作成して検証後に公開
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/release/webview2-preview' || startsWith(github.ref, 'refs/tags/webview2-preview-v'))
+      runs-on: windows-2022
+      timeout-minutes: 90
+      permissions:
+         contents: write
+      steps:
+         - name: Source を checkout
+           uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+         - name: Node.js を設定
+           uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+           with:
+              node-version: "24.22.1"
+              cache: npm
+              cache-dependency-path: |
+                 package-lock.json
+                 apps/server/package-lock.json
+                 apps/web/package-lock.json
+                 apps/desktop/package-lock.json
+                 apps/webview2/package-lock.json
+         - name: Windows stdio の protocol fixture を先に検証
+           shell: pwsh
+           run: |
+              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1 -ProtocolPreflight
+              if ($LASTEXITCODE -ne 0) { throw "Windows protocol fixture preflight failed" }
+         - name: 固定 Rust toolchain と両 target を install
+           shell: pwsh
+           run: |
+              $manifest = Get-Content -LiteralPath apps/webview2/preview.json -Raw | ConvertFrom-Json
+              if ($manifest.nodeVersion -ne "24.22.1" -or $manifest.rustVersion -ne "1.99.1") {
+                 throw "Review the workflow when changing preview toolchains"
+              }
+              rustup toolchain install 1.99.1 --profile minimal --target x86_64-pc-windows-msvc --target aarch64-pc-windows-msvc
+              if ($LASTEXITCODE -ne 0) { throw "Rust toolchain install failed" }
+         - name: 全 npm scope を install
+           shell: pwsh
+           run: |
+              foreach ($scope in @(".", "apps/server", "apps/web", "apps/desktop", "apps/webview2")) {
+                 npm ci --prefix $scope
+                 if ($LASTEXITCODE -ne 0) { throw "Dependency install failed: $scope" }
+                 npm audit --prefix $scope --audit-level=high
+                 if ($LASTEXITCODE -ne 0) { throw "Dependency audit failed: $scope" }
+              }
+         - name: Source gate と build
+           shell: pwsh
+           run: |
+              foreach ($script in @("audit:public", "test:all", "build")) {
+                 npm run $script
+                 if ($LASTEXITCODE -ne 0) { throw "Source gate failed: $script" }
+              }
+         - name: Browser と Electron E2E
+           shell: pwsh
+           run: |
+              npx playwright install chromium webkit
+              if ($LASTEXITCODE -ne 0) { throw "Browser install failed" }
+              npm run test:e2e
+              if ($LASTEXITCODE -ne 0) { throw "Browser and Electron E2E failed" }
+         - name: x64 の ZIP を build
+           shell: pwsh
+           run: |
+              node apps/webview2/scripts/build.mjs --arch x64
+              if ($LASTEXITCODE -ne 0) { throw "x64 preview build failed" }
+         - name: Native credential と loopback の boundary を検証
+           working-directory: apps/webview2/native
+           shell: pwsh
+           run: |
+              cargo +1.99.1 test --locked --release --target x86_64-pc-windows-msvc
+              if ($LASTEXITCODE -ne 0) { throw "Native boundary tests failed" }
+         - name: 実際の x64 ZIP から native UI と転送と復旧を検証
+           shell: pwsh
+           run: |
+              powershell.exe -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File scripts/test-webview2-preview.ps1
+              if ($LASTEXITCODE -ne 0) { throw "Packaged WebView2 preview smoke failed" }
+         - name: ARM64 の ZIP を build
+           shell: pwsh
+           run: |
+              node apps/webview2/scripts/build.mjs --arch arm64
+              if ($LASTEXITCODE -ne 0) { throw "ARM64 preview build failed" }
+         - name: 両 PE と配布 ZIP の evidence を照合
+           shell: pwsh
+           run: |
+              node scripts/test-webview2-preview-static.mjs
+              if ($LASTEXITCODE -ne 0) { throw "Preview static/evidence validation failed" }
+         - name: 秘密を含まない検証 evidence だけを保存
+           if: always()
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+              name: WebView2-preview-evidence-publish
+              path: |
+                 test-results/webview2-preview/WEBVIEW2_SMOKE.json
+                 test-results/webview2-preview/WEBVIEW2_SMOKE_FAILURE.json
+                 test-results/webview2-preview/WEBVIEW2_PREVIEW_EVIDENCE.json
+                 test-results/webview2-preview/SHA256SUMS.txt
+              if-no-files-found: ignore
+              retention-days: 14
+         - name: 新しい prerelease に exact ZIP と evidence を公開
+           shell: pwsh
+           env:
+              GH_TOKEN: ${{ github.token }}
+           run: |
+              $ErrorActionPreference = "Stop"
+              $manifest = Get-Content -LiteralPath apps/webview2/preview.json -Raw | ConvertFrom-Json
+              $version = $manifest.version
+              $tag = "webview2-preview-v$version"
+              if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME -ne $tag) {
+                 throw "Preview tag and manifest version differ"
+              }
+              if ($env:GITHUB_REF_TYPE -ne "tag" -and $env:GITHUB_REF_NAME -ne "release/webview2-preview") {
+                 throw "Preview publication requires the dedicated release branch or tag"
+              }
+              $report = Get-Content -LiteralPath test-results/webview2-preview/WEBVIEW2_PREVIEW_EVIDENCE.json -Raw | ConvertFrom-Json
+              if ($report.sourceCommit -ne $env:GITHUB_SHA) { throw "Evidence source commit differs" }
+              $existing = gh release view $tag --repo $env:GITHUB_REPOSITORY --json tagName 2>$null
+              if ($LASTEXITCODE -eq 0) { throw "The preview release already exists; increment preview.json instead of replacing assets" }
+              $assets = @(
+                 "apps/webview2/release/Local.File.Transfer-WebView2-Preview-$version-x64.zip",
+                 "apps/webview2/release/Local.File.Transfer-WebView2-Preview-$version-arm64.zip",
+                 "test-results/webview2-preview/WEBVIEW2_PREVIEW_EVIDENCE.json",
+                 "test-results/webview2-preview/SHA256SUMS.txt"
+              )
+              $create = @(
+                 "release", "create", $tag, "--repo", $env:GITHUB_REPOSITORY,
+                 "--target", $env:GITHUB_SHA,
+                 "--title", "Local File Transfer WebView2 Preview $version",
+                 "--notes-file", "docs/WEBVIEW2_PREVIEW.md",
+                 "--prerelease", "--draft"
+              )
+              & gh @create
+              if ($LASTEXITCODE -ne 0) { throw "Preview draft creation failed" }
+              $upload = @("release", "upload", $tag, "--repo", $env:GITHUB_REPOSITORY) + $assets
+              & gh @upload
+              if ($LASTEXITCODE -ne 0) { throw "Preview assets upload failed" }
+              $draftJson = gh release view $tag --repo $env:GITHUB_REPOSITORY --json isDraft,isPrerelease,assets
+              if ($LASTEXITCODE -ne 0) { throw "Preview draft inspection failed" }
+              $draft = $draftJson | ConvertFrom-Json
+              if (-not $draft.isDraft -or -not $draft.isPrerelease -or $draft.assets.Count -ne $assets.Count) {
+                 throw "Preview draft metadata or asset count differs"
+              }
+              foreach ($artifact in $report.artifacts) {
+                 $asset = $draft.assets | Where-Object name -eq $artifact.name
+                 if (-not $asset -or $asset.size -ne $artifact.bytes) { throw "Uploaded ZIP metadata differs" }
+              }
+              $remoteJson = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$tag"
+              if ($LASTEXITCODE -ne 0) { throw "Uploaded preview digest inspection failed" }
+              $remote = $remoteJson | ConvertFrom-Json
+              $verificationRoot = Join-Path $env:RUNNER_TEMP ("lft-preview-digest-" + [guid]::NewGuid().ToString("N"))
+              New-Item -ItemType Directory -Path $verificationRoot -Force | Out-Null
+              try {
+                 foreach ($localAsset in $assets) {
+                    $assetName = [IO.Path]::GetFileName($localAsset)
+                    $uploaded = @($remote.assets | Where-Object name -eq $assetName)
+                    if ($uploaded.Count -ne 1) { throw "Uploaded asset identity differs" }
+                    $expected = (Get-FileHash -LiteralPath $localAsset -Algorithm SHA256).Hash.ToLowerInvariant()
+                    if ($uploaded[0].digest -match '^sha256:([0-9a-f]{64})$') {
+                       $actual = $Matches[1]
+                    } else {
+                       gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $assetName --dir $verificationRoot
+                       if ($LASTEXITCODE -ne 0) { throw "Uploaded asset verification download failed" }
+                       $actual = (Get-FileHash -LiteralPath (Join-Path $verificationRoot $assetName) -Algorithm SHA256).Hash.ToLowerInvariant()
+                    }
+                    if ($actual -ne $expected) { throw "Uploaded asset SHA256 differs" }
+                 }
+              } finally {
+                 Remove-Item -LiteralPath $verificationRoot -Recurse -Force
+              }
+              gh release edit $tag --repo $env:GITHUB_REPOSITORY --draft=false --prerelease --latest=false
+              if ($LASTEXITCODE -ne 0) { throw "Preview publication failed" }
+              $publishedJson = gh release view $tag --repo $env:GITHUB_REPOSITORY --json isDraft,isPrerelease,url,assets
+              if ($LASTEXITCODE -ne 0) { throw "Published preview inspection failed" }
+              $published = $publishedJson | ConvertFrom-Json
+              if ($published.isDraft -or -not $published.isPrerelease -or $published.assets.Count -ne $assets.Count) {
+                 throw "Published preview metadata differs"
+              }
+              Write-Output $published.url

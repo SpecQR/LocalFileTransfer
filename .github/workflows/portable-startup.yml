@@ -38,11 +38,12 @@ jobs:
                  apps/server/package-lock.json
                  apps/web/package-lock.json
                  apps/desktop/package-lock.json
+                 apps/webview2/package-lock.json
 
          - name: Dependency を install
            shell: pwsh
            run: |
-              foreach ($scope in @(".", "apps/server", "apps/web", "apps/desktop")) {
+              foreach ($scope in @(".", "apps/server", "apps/web", "apps/desktop", "apps/webview2")) {
                  npm ci --prefix $scope
                  if ($LASTEXITCODE -ne 0) { throw "Dependency install failed: $scope" }
               }

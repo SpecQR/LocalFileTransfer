@@ -106,6 +106,40 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
    );
 
    useEffect(() => {
+      if (!window.localFileTransfer?.nativeFileDrop) {
+         return undefined;
+      }
+
+      const filesAdded = (event: Event): void => {
+         const view = (event as CustomEvent<RoomView>).detail;
+
+         if (!view?.roomId) {
+            return;
+         }
+
+         void window.localFileTransfer?.roomBootstrap().then((bootstrap) => {
+            if (view.roomId !== bootstrap.roomId) {
+               return;
+            }
+
+            setRoomId(bootstrap.roomId);
+            setJoinUrl(bootstrap.joinUrl);
+            setRoom(view);
+            setStatus(messages.ready);
+            setError(undefined);
+         }).catch(() => setError(messages.addFilesFailed));
+      };
+      const filesError = (): void => setError(messages.addFilesFailed);
+
+      window.addEventListener("local-file-transfer:files-added", filesAdded);
+      window.addEventListener("local-file-transfer:files-error", filesError);
+      return () => {
+         window.removeEventListener("local-file-transfer:files-added", filesAdded);
+         window.removeEventListener("local-file-transfer:files-error", filesError);
+      };
+   }, [messages]);
+
+   useEffect(() => {
       let stopped = false;
 
       async function openRoom(): Promise<void> {
@@ -313,6 +347,38 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
    const openLogFolder = useCallback(async () => {
       await window.localFileTransfer?.openLogFolder();
    }, []);
+
+   async function chooseDesktopFiles(): Promise<void> {
+      const chooseFiles = window.localFileTransfer?.chooseFiles;
+
+      if (!chooseFiles) {
+         fileInputRef.current?.click();
+         return;
+      }
+
+      setStatus(messages.addingFiles);
+
+      try {
+         const next = await chooseFiles();
+
+         if (next) {
+            const bootstrap = await window.localFileTransfer?.roomBootstrap();
+
+            if (!bootstrap) {
+               throw new Error(messages.desktopRoomUnavailable);
+            }
+
+            setRoomId(bootstrap.roomId);
+            setJoinUrl(bootstrap.joinUrl);
+            setRoom(next.roomId === bootstrap.roomId ? next : await getRoom(bootstrap.roomId));
+         }
+
+         setStatus(messages.ready);
+         setError(undefined);
+      } catch (addError) {
+         setError(addError instanceof Error ? addError.message : messages.addFilesFailed);
+      }
+   }
 
    async function addDesktopFiles(files: File[]): Promise<void> {
       if (files.length === 0 || !window.localFileTransfer) {
@@ -665,7 +731,10 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
                event.preventDefault();
-               void addDesktopFiles(Array.from(event.dataTransfer.files));
+
+               if (!window.localFileTransfer?.nativeFileDrop) {
+                  void addDesktopFiles(Array.from(event.dataTransfer.files));
+               }
             }}
          >
             <header className="room-toolbar">
@@ -685,7 +754,7 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                      className="icon-button"
                      title={messages.addFiles}
                      type="button"
-                     onClick={() => fileInputRef.current?.click()}
+                     onClick={() => void chooseDesktopFiles()}
                   >
                      <Plus aria-hidden="true" size={21} />
                   </button>
@@ -739,7 +808,9 @@ export function TransferRoomPage({ roomId: routeRoomId }: RoomPageProps): JSX.El
                   <input
                      ref={fileInputRef}
                      className="visually-hidden"
+                     disabled={Boolean(window.localFileTransfer?.chooseFiles)}
                      multiple
+                     tabIndex={-1}
                      type="file"
                      onChange={(event) => {
                         void addDesktopFiles(Array.from(event.currentTarget.files ?? []));

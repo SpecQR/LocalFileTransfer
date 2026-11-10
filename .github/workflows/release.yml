@@ -41,6 +41,7 @@ jobs:
                  apps/server/package-lock.json
                  apps/web/package-lock.json
                  apps/desktop/package-lock.json
+                 apps/webview2/package-lock.json
 
          - name: Tag と package version を照合
            shell: pwsh
@@ -65,6 +66,8 @@ jobs:
            run: npm ci --prefix apps/web
          - name: Desktop dependency を install
            run: npm ci --prefix apps/desktop
+         - name: WebView2 preview dependency を install
+           run: npm ci --prefix apps/webview2
          - name: Playwright browser を install
            run: npx playwright install chromium webkit
 
@@ -86,6 +89,7 @@ jobs:
               npm audit --audit-level=high --prefix apps/server
               npm audit --audit-level=high --prefix apps/web
               npm audit --audit-level=high --prefix apps/desktop
+              npm audit --audit-level=high --prefix apps/webview2
 
          - name: x64 Portable を build
            run: npm run dist:windows
