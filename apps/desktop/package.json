@@ -28,6 +28,8 @@
    "build": {
       "appId": "local.file.transfer",
       "productName": "Local File Transfer",
+      "compression": "normal",
+      "beforePack": "scripts/prepare-portable.cjs",
       "electronFuses": {
          "runAsNode": false,
          "enableCookieEncryption": true,
@@ -59,7 +61,8 @@
          ]
       },
       "portable": {
-         "artifactName": "Local.File.Transfer-${version}-${arch}-Portable.${ext}"
+         "artifactName": "Local.File.Transfer-${version}-${arch}-Portable.${ext}",
+         "useZip": true
       }
    },
    "dependencies": {

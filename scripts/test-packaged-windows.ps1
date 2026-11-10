@@ -1,3 +1,8 @@
+param(
+   [string] $ArtifactPath = "",
+   [string] $EvidenceDirectory = ""
+)
+
 $ErrorActionPreference = "Stop"
 $CurlPath = (Get-Command curl.exe -ErrorAction Stop).Source
 $NodePath = (Get-Command node.exe -ErrorAction Stop).Source
@@ -154,7 +159,17 @@ $Root = Split-Path -Parent $PSScriptRoot
 $Version = (Get-Content -LiteralPath (Join-Path $Root "package.json") -Raw | ConvertFrom-Json).version
 $EvidenceLabel = if ($Version -match "-rc\.(\d+)$") { "RC" + $Matches[1] } else { $Version -replace "[^A-Za-z0-9]", "_" }
 $ArtifactName = "Local.File.Transfer-$Version-x64-Portable.exe"
-$Artifact = Join-Path $Root "apps\desktop\release\$ArtifactName"
+$Artifact = if ($ArtifactPath) {
+   [IO.Path]::GetFullPath($ArtifactPath)
+} else {
+   Join-Path $Root "apps\desktop\release\$ArtifactName"
+}
+$ArtifactName = Split-Path -Leaf $Artifact
+$releaseEvidenceDir = if ($EvidenceDirectory) {
+   [IO.Path]::GetFullPath($EvidenceDirectory)
+} else {
+   Join-Path $Root "docs\release\$Version"
+}
 $RunRoot = Join-Path ([IO.Path]::GetTempPath()) ("lft-packaged-smoke-" + [guid]::NewGuid().ToString("N"))
 $UserData = Join-Path $RunRoot "user-data"
 $Storage = Join-Path $RunRoot "storage"
@@ -184,6 +199,7 @@ try {
    $env:LFT_SMOKE_LOOPBACK_ONLY = "1"
 
    try {
+      $StartupClock = [Diagnostics.Stopwatch]::StartNew()
       $Launcher = Start-Process -FilePath $Artifact `
          -ArgumentList $LaunchArguments `
          -WindowStyle Hidden `
@@ -198,12 +214,16 @@ try {
    Wait-Until -Description "first service-ready record" -TimeoutSeconds 90 -Condition {
       @(Get-LogRecords | Where-Object event -eq "service-ready").Count -ge 1
    }
-   Add-TrackedProcesses
+   $ServiceReadySeconds = $StartupClock.Elapsed.TotalSeconds
    $firstReady = @(Get-LogRecords | Where-Object event -eq "service-ready")[0]
    $Port = [int]$firstReady.details.port
    $BaseUrl = "http://127.0.0.1:$Port"
    $Health = Wait-HttpOk -Url "$BaseUrl/healthz" -TimeoutSeconds 30
+   $HealthReadySeconds = $StartupClock.Elapsed.TotalSeconds
    $App = Wait-HttpOk -Url "$BaseUrl/app" -TimeoutSeconds 30
+   $AppHttpReadySeconds = $StartupClock.Elapsed.TotalSeconds
+   $StartupClock.Stop()
+   Add-TrackedProcesses
 
    Wait-Until -Description "SQLite room database" -TimeoutSeconds 30 -Condition {
       Test-Path -LiteralPath (Join-Path $Storage "rooms.sqlite")
@@ -302,6 +322,13 @@ try {
       gracefulWindowClose = $GracefulWindowClose
       endpointClosed = $EndpointClosed
       residualProcesses = $Residual.Count
+      serviceReadySeconds = [math]::Round($ServiceReadySeconds, 3)
+      healthReadySeconds = [math]::Round($HealthReadySeconds, 3)
+      appHttpReadySeconds = [math]::Round($AppHttpReadySeconds, 3)
+      startupClock = "stopwatch-immediately-before-launch"
+      readinessPollMilliseconds = 200
+      rendererReadyMeasured = $false
+      # Retain the historical pre-interruption measurement for existing consumers.
       launchSeconds = [math]::Round(($InterruptedAt - $StartedAt).TotalSeconds, 3)
    }
 
@@ -309,16 +336,16 @@ try {
       throw "Packaged shutdown left an endpoint or process active"
    }
 
-   $releaseEvidenceDir = Join-Path $Root "docs\release\$Version"
-
    New-Item -ItemType Directory -Path $releaseEvidenceDir -Force | Out-Null
    $json = $Evidence | ConvertTo-Json -Depth 8
 
-   [IO.File]::WriteAllText(
-      (Join-Path $Root ("docs\" + $EvidenceLabel + "_PACKAGED_SMOKE.json")),
-      $json + [Environment]::NewLine,
-      [Text.UTF8Encoding]::new($false)
-   )
+   if (-not $EvidenceDirectory) {
+      [IO.File]::WriteAllText(
+         (Join-Path $Root ("docs\" + $EvidenceLabel + "_PACKAGED_SMOKE.json")),
+         $json + [Environment]::NewLine,
+         [Text.UTF8Encoding]::new($false)
+      )
+   }
    [IO.File]::WriteAllText(
       (Join-Path $releaseEvidenceDir "PACKAGED_SMOKE.json"),
       $json + [Environment]::NewLine,
@@ -327,7 +354,7 @@ try {
    Remove-Item -LiteralPath (Join-Path $releaseEvidenceDir "PACKAGED_SMOKE_FAILURE.json") -Force -ErrorAction SilentlyContinue
    $Evidence | ConvertTo-Json -Depth 8
 } catch {
-   $failureDir = Join-Path $Root "docs\release\$Version"
+   $failureDir = $releaseEvidenceDir
    $failureEvidence = [ordered]@{
       schemaVersion = 1
       testedAt = (Get-Date).ToUniversalTime().ToString("o")

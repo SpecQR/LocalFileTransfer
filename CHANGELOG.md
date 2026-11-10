@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+### 起動時の展開
+
+- Portable EXE の圧縮方式を、内部 7z archive の展開・全ファイルコピーから、NSIS zlib/Deflate による一時フォルダーへの直接展開へ変更しました。ファイルサイズの増加を許容して起動前の処理を軽くします。単体 EXE と終了時の一時ファイル削除を維持します。
+- electron-builder 26.15.3 の ARM64 単独 package に不足している direct-extraction branch を、version と template SHA-256 を照合する build hook で補います。未確認の dependency 更新では build を停止します。
+- 起動時間は Windows 上の同じ source に対する圧縮方式の比較で評価します。利用者の PC での短縮秒数や物理 Windows on ARM の動作を未計測のまま保証しません。公開済み v2.0.1 の EXE は変更しません。
+
 ### QR 生成
 
 - SpecQR を 2.4.0 から 3.0.0-rc.2 へ exact pin で更新しました。正式版ではなく RC を採用した更新です。公開済み v2.0.1 の EXE は 2.4.0 のままです。

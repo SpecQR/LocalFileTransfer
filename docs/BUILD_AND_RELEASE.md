@@ -65,6 +65,36 @@ Local.File.Transfer-<version>-arm64-Portable.exe
 
 Executable は Git に commit せず、GitHub Release asset としてだけ公開します。
 
+### Portable の起動時展開
+
+次回 release 向けの source は `portable.useZip: true` と `compression: normal` を使用します。固定した electron-builder 26.15.3 では、この組合せは NSIS の non-solid zlib/Deflate により、アプリのファイルを実行先の一時フォルダーへ直接展開します。配布物は従来どおり 1 個の Portable EXE です。
+
+従来の既定値は、内蔵した 7z/LZMA archive を一度別の一時フォルダーへ展開し、その内容を実行先へ全てコピーする経路でした。新しい方式では、その追加コピーも省きます。圧縮率より展開時間を優先するため EXE は大きくなる見込みですが、増加量と起動時間は同じ source から作った両方式の artifact で比較します。公開済み v2.0.1 との直接比較には、それ以降の Electron / dependency 更新も混ざります。
+
+一時展開と終了時の削除は継続します。`unpackDirName` の固定は展開済みファイルの再利用を意味せず、起動キャッシュの代わりにはなりません。永続的な実行ファイルキャッシュやインストーラーは追加していません。
+
+#### ARM64 の build-time workaround
+
+electron-builder 26.15.3 の `portable.nsi` には、`useZip` を使って ARM64 だけを package した場合の direct-extraction branch がありません。Portable target では installer 向けの `script` / `include` override も使えないため、`apps/desktop/scripts/prepare-portable.cjs` を `beforePack` hook として実行し、この branch だけを補います。
+
+Hook は `app-builder-lib` の version と template 全体の SHA-256 を照合し、既知の原文または適用済みの結果だけを受け入れます。内容が変わった場合は build を停止するため、dependency 更新時には workaround の継続要否を確認してください。Launcher の実行待ち、終了コード、一時フォルダー削除、Electron fuse は変更しません。
+
+参照する source は lockfile で固定した `app-builder-lib@26.15.3` package 内の次のファイルです。
+
+- `out/targets/nsis/NsisTarget.js`: Portable target と圧縮設定
+- `templates/nsis/portable.nsi`: Portable launcher
+- `templates/nsis/include/extractAppPackage.nsh`: 従来の archive 展開とコピー
+
+#### 同一 source の起動比較
+
+`.github/workflows/portable-startup.yml` は関連 source の Pull Request で、Windows 2022 runner 上の E2E、従来の 7z 方式、変更後の x64 / ARM64 build、PE / fuse check を実行します。比較用 baseline だけ `-c.portable.useZip=false` を指定し、runtime と dependency の差が結果に混ざらないようにします。
+
+`scripts/compare-portable-startup.ps1` は baseline と optimized の EXE path を受け取り、それぞれ 1 回の warm-up 後に 3 回ずつ順番を交互にして実行します。各回は新しい隔離 storage を使い、起動後に既存 packaged smoke の service recovery と graceful shutdown も検証します。
+
+計測の開始点は `Start-Process` 直前の Stopwatch です。最初の `service-ready` log の観測、`/healthz` の HTTP 200、`/app` の HTTP 200 を別々の秒数として記録します。Polling 間隔は 200 ms であり、画面や QR の描画完了、OS の cold boot、物理 Windows on ARM の時間は測っていません。従来の smoke evidence の `launchSeconds` は復旧試験開始までの時間を含むため、起動性能の比較には使用しません。
+
+Workflow はサイズ、SHA-256、各回の秒数、中央値、測定条件を含む `STARTUP_COMPARISON.json` と `PACKAGING_VALIDATION.json` だけを Actions artifact に保存します。EXE の公開は従来の tag-driven release workflow が担当します。Benchmark が通っただけで release gate や物理端末の確認を完了したとは扱いません。
+
 ## Electron security gate
 
 ```powershell

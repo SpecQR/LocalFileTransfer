@@ -227,22 +227,24 @@ test("build provenance contains only allowlisted public context", () => {
 });
 
 
-test("packaged smoke PowerShell parses before release", () => {
+test("packaged smoke and startup comparison PowerShell parse before release", () => {
    const scriptsDir = dirname(fileURLToPath(import.meta.url));
    const smokePath = join(scriptsDir, "test-packaged-windows.ps1");
 
-   execFileSync("powershell.exe", [
-      "-NoProfile",
-      "-NonInteractive",
-      "-Command",
-      "$source=Get-Content -LiteralPath $env:LFT_SMOKE_SCRIPT -Raw -Encoding UTF8; [void][scriptblock]::Create($source)"
-   ], {
-      env: {
-         ...process.env,
-         LFT_SMOKE_SCRIPT: smokePath
-      },
-      windowsHide: true
-   });
+   for (const scriptName of ["test-packaged-windows.ps1", "compare-portable-startup.ps1"]) {
+      execFileSync("powershell.exe", [
+         "-NoProfile",
+         "-NonInteractive",
+         "-Command",
+         "$source=Get-Content -LiteralPath $env:LFT_SMOKE_SCRIPT -Raw -Encoding UTF8; [void][scriptblock]::Create($source)"
+      ], {
+         env: {
+            ...process.env,
+            LFT_SMOKE_SCRIPT: join(scriptsDir, scriptName)
+         },
+         windowsHide: true
+      });
+   }
 
    const smokeSource = readFileSync(smokePath, "utf8");
 
@@ -298,33 +300,50 @@ test("release workflow publishes RC and stable channels only after draft assets 
    assert.match(workflowSource, /releases\/tag\/\$env:LFT_RELEASE_TAG/u);
 });
 
-test("release publication PowerShell blocks parse before a tag is pushed", () => {
+test("release and startup workflow PowerShell blocks parse before a tag is pushed", () => {
    const scriptsDir = dirname(fileURLToPath(import.meta.url));
-   const workflowPath = join(scriptsDir, "..", ".github", "workflows", "release.yml");
-   const workflowSource = readFileSync(workflowPath, "utf8");
    const tempRoot = mkdtempSync(join(tmpdir(), "lft-release-workflow-"));
-   const stepNames = [
-      "GitHub release を作成または更新",
-      "公開結果を再検証"
+   const workflows = [
+      {
+         name: "release.yml",
+         steps: ["GitHub release を作成または更新", "公開結果を再検証"]
+      },
+      {
+         name: "portable-startup.yml",
+         steps: [
+            "Dependency を install",
+            "Source gate と production build",
+            "Browser と Electron E2E",
+            "同一 source の既存 7z 方式を build",
+            "高速展開版を両 architecture で build",
+            "両 architecture の PE と fuse を検証",
+            "x64 起動時間と packaged recovery を比較"
+         ]
+      }
    ];
 
    try {
-      for (const [index, stepName] of stepNames.entries()) {
-         const blockPath = join(tempRoot, `block-${index}.ps1`);
+      for (const workflow of workflows) {
+         const workflowPath = join(scriptsDir, "..", ".github", "workflows", workflow.name);
+         const workflowSource = readFileSync(workflowPath, "utf8");
 
-         writeFileSync(blockPath, workflowRunBlock(workflowSource, stepName), "utf8");
-         execFileSync("powershell.exe", [
-            "-NoProfile",
-            "-NonInteractive",
-            "-Command",
-            "$source=Get-Content -LiteralPath $env:LFT_WORKFLOW_BLOCK -Raw -Encoding UTF8; [void][scriptblock]::Create($source)"
-         ], {
-            env: {
-               ...process.env,
-               LFT_WORKFLOW_BLOCK: blockPath
-            },
-            windowsHide: true
-         });
+         for (const [index, stepName] of workflow.steps.entries()) {
+            const blockPath = join(tempRoot, `${workflow.name}-${index}.ps1`);
+
+            writeFileSync(blockPath, workflowRunBlock(workflowSource, stepName), "utf8");
+            execFileSync("powershell.exe", [
+               "-NoProfile",
+               "-NonInteractive",
+               "-Command",
+               "$source=Get-Content -LiteralPath $env:LFT_WORKFLOW_BLOCK -Raw -Encoding UTF8; [void][scriptblock]::Create($source)"
+            ], {
+               env: {
+                  ...process.env,
+                  LFT_WORKFLOW_BLOCK: blockPath
+               },
+               windowsHide: true
+            });
+         }
       }
    } finally {
       rmSync(tempRoot, { recursive: true, force: true });
